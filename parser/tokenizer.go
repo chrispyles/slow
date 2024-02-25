@@ -1,0 +1,224 @@
+package parser
+
+import (
+	"strings"
+)
+
+var (
+	numerals = map[byte]bool{
+		'0': true,
+		'1': true,
+		'2': true,
+		'3': true,
+		'4': true,
+		'5': true,
+		'6': true,
+		'7': true,
+		'8': true,
+		'9': true,
+	}
+
+	numeralStarts = map[byte]bool{
+		'0': true,
+		'1': true,
+		'2': true,
+		'3': true,
+		'4': true,
+		'5': true,
+		'6': true,
+		'7': true,
+		'8': true,
+		'9': true,
+		'+': true,
+		'-': true,
+		'.': true,
+	}
+
+	stringDelim = byte('"')
+
+	whitespace = map[byte]bool{
+		' ':  true,
+		'\n': true,
+		'\t': true,
+		'\r': true,
+	}
+
+	singleCharTokens = map[byte]bool{
+		'(': true,
+		')': true,
+		'[': true,
+		']': true,
+		'{': true,
+		'}': true,
+	}
+
+	operatorStarts = map[byte]bool{
+		'+': true,
+		'-': true,
+		'*': true,
+		'/': true,
+		'%': true,
+		'=': true,
+		'!': true,
+		'<': true,
+		'>': true,
+	}
+)
+
+func isNumeralEnd(c byte) bool {
+	return whitespace[c] || singleCharTokens[c] || c == stringDelim || c == ',' || operatorStarts[c]
+}
+
+func isTokenEnd(c byte) bool {
+	return isNumeralEnd(c) || c == '.'
+}
+
+func isDelimeter(c byte) bool {
+	return singleCharTokens[c] || c == ','
+}
+
+func isOperator(s string) bool {
+	_, u := toUnaryOp(s)
+	_, b := toBinaryOp(s)
+	_, t := toTernaryOp(s)
+	return u || b || t
+}
+
+func nextCandidateToken(line string, k int) (string, int) {
+	for k < len(line) {
+		c := line[k]
+		if c == '#' { // comment
+			return "", len(line)
+		} else if whitespace[c] {
+			if c == '\n' {
+				return string(c), k + 1
+			}
+			k++
+		} else if isDelimeter(c) {
+			return string(c), k + 1
+		} else if c == stringDelim {
+			// TODO: check that this works, handles escapes, etc
+			if k+1 < len(line) && line[k+1] == c {
+				return string(c) + string(c), k + 2
+			}
+			j := readUntilStringClose(line, k+1)
+			return line[k : j+1], j + 1
+		} else if operatorStarts[c] {
+			// operators are either 1 or 2 characters long, so check if this character and the next
+			// character form a valid operator
+			if k+1 < len(line) && isOperator(line[k:k+2]) {
+				return line[k : k+2], k + 2
+			}
+			return string(c), k + 1
+		} else if numeralStarts[c] {
+			// If c is a '.' and the next character is non-numeric (or there is no next character on the
+			// line), return c as its own token. Otherwise, parse it as part of a float literal.
+			if c == '.' && (k+1 >= len(line) || !numerals[line[k+1]]) {
+				return string(c), k + 1
+			}
+			j := k
+			seenPeriod := false
+			for j < len(line) && !isNumeralEnd(line[j]) && (line[j] != '.' || !seenPeriod) {
+				if line[j] == '.' {
+					seenPeriod = true
+				}
+				j++
+			}
+			return line[k:j], min(j, len(line))
+		} else {
+			j := k
+			for j < len(line) && !isTokenEnd(line[j]) {
+				j++
+			}
+			return line[k:j], min(j, len(line))
+		}
+	}
+	return "", len(line)
+}
+
+// readUntilStringClose reads through the provided line starting at index k and returns the index of
+// the next unescaped string delimiter.
+func readUntilStringClose(line string, k int) int {
+	isEscaped := false
+	for i := k; i < len(line); i++ {
+		c := string(line[i])
+		if c == "\"" && !isEscaped {
+			return i
+		}
+		isEscaped = !isEscaped && c == "\\"
+	}
+	// TODO: check that this doesn't let unclosed strings through
+	return len(line)
+}
+
+func tokenizeLine(line string) (res tokenizedLine) {
+	text, i := nextCandidateToken(line, 0)
+	for text != "" {
+		res = append(res, text)
+		text, i = nextCandidateToken(line, i)
+	}
+	res = append(res, "\n")
+	return
+}
+
+type tokenizedLine []string
+
+type Buffer struct {
+	index       int
+	lines       []tokenizedLine
+	source      []tokenizedLine
+	currentLine tokenizedLine
+}
+
+func NewBuffer(s string) *Buffer {
+	source := []tokenizedLine{}
+	for _, l := range strings.Split(s, "\n") {
+		source = append(source, tokenizeLine(l))
+	}
+	b := &Buffer{0, nil, source, tokenizedLine{}}
+	// Move b.currentLine and b.index to the first token
+	b.Current()
+	return b
+}
+
+func (b *Buffer) MoreOnLine() bool {
+	return b.index < len(b.currentLine)
+}
+
+func (b *Buffer) Pop() string {
+	c := b.Current()
+	b.index++
+	return c
+}
+
+func (b *Buffer) MoveBack() {
+	b.index--
+	if b.index < 0 {
+		b.lines = b.lines[:len(b.lines)-1]
+		b.currentLine = b.lines[len(b.lines)-1]
+		b.index = len(b.currentLine) - 1
+	}
+}
+
+// Current returns the current token. If the index of the buffer has reached the end of the current
+// line, the current line and index are moved to the next token. Returns the empty string once all
+// tokens have been exhausted.
+func (b *Buffer) Current() string {
+	for !b.MoreOnLine() {
+		b.index = 0
+		clIdx := len(b.lines)
+		if clIdx < len(b.source) {
+			b.currentLine = b.source[clIdx]
+			b.lines = append(b.lines, b.currentLine)
+		} else {
+			b.currentLine = tokenizedLine{}
+			return ""
+		}
+	}
+	return b.currentLine[b.index]
+}
+
+// LineNumber returns the line number of the next token in the buffer.
+func (b *Buffer) LineNumber() int {
+	return len(b.lines)
+}
