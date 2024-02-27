@@ -8,8 +8,8 @@ type SyntaxError struct {
 	lineNumber int
 }
 
-func NewSyntaxError(buf Buffer, m string, s string) *SyntaxError {
-	return &SyntaxError{message: m, symbol: s, lineNumber: buf.LineNumber()}
+func NewSyntaxError(buf Buffer, message string, symbol string) *SyntaxError {
+	return &SyntaxError{message: message, symbol: symbol, lineNumber: buf.LineNumber()}
 }
 
 func UnexpectedSymbolError(buf Buffer, got, want string) *SyntaxError {
