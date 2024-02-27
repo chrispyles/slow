@@ -276,6 +276,6 @@ for x in range(1, 20) {
 	}
 
 	if diff := cmp.Diff(want, got, allowTypesUnexported); diff != "" {
-		t.Errorf("Incorrect AST (-want +got):\n%s", diff) // TODO: better message
+		t.Errorf("Incorrect AST (-want +got):\n%s", diff)
 	}
 }

@@ -175,6 +175,10 @@ func NewBuffer(s string) *Buffer {
 	for _, l := range strings.Split(s, "\n") {
 		source = append(source, tokenizeLine(l))
 	}
+	// Trim off last token (which is a newline) to prevent an extra newline token (since tokenizeLine
+	// always adds a newline at the end of the slice it returns).
+	lastLine := source[len(source)-1]
+	source[len(source)-1] = lastLine[:len(lastLine)-1]
 	b := &Buffer{0, nil, source, tokenizedLine{}}
 	// Move b.currentLine and b.index to the first token
 	b.Current()
