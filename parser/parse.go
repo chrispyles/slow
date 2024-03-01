@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 
@@ -206,7 +208,6 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 	} else {
 		return nil, errors.UnexpectedSymbolError(buf, c, "")
 	}
-	// TODO: does this need to handle "{"?
 }
 
 // addNewBinOp adds a new operation to the provided tree of binary operations.
@@ -251,8 +252,10 @@ func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, er
 	if intRegex.Match(tknBytes) {
 		intValue, err := strconv.ParseInt(tkn, 10, 64)
 		if err != nil {
-			// TODO: wrap this error
-			return nil, err
+			if *config.Debug {
+				log.Print(fmt.Errorf("%w", err).Error())
+			}
+			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as int", tkn))
 		}
 		return &ConstantNode{Value: types.NewInt(intValue)}, nil
 	} else if uintRegex.Match(tknBytes) {
@@ -260,15 +263,19 @@ func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, er
 		numerals := tkn[:len(tkn)-1]
 		uintValue, err := strconv.ParseUint(numerals, 10, 64)
 		if err != nil {
-			// TODO: wrap this error
-			return nil, err
+			if *config.Debug {
+				log.Print(fmt.Errorf("%w", err).Error())
+			}
+			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as uint", tkn))
 		}
 		return &ConstantNode{Value: types.NewUint(uintValue)}, nil
 	} else if floatRegex.Match(tknBytes) {
 		floatValue, err := strconv.ParseFloat(tkn, 64)
 		if err != nil {
-			// TODO: wrap this error
-			return nil, err
+			if *config.Debug {
+				log.Print(fmt.Errorf("%w", err).Error())
+			}
+			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as float", tkn))
 		}
 		return &ConstantNode{Value: types.NewFloat(floatValue)}, nil
 	} else if tkn == "true" {

@@ -7,9 +7,7 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
-// TODO: move?
-type ReturnError struct {
-}
+type ReturnError struct{}
 
 func (*ReturnError) Error() string { return "" }
 
