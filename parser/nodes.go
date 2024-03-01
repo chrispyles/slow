@@ -39,19 +39,6 @@ func (n *AttributeNode) Execute(e *execute.Environment) (execute.Value, error) {
 }
 
 // -------------------------------------------------------------------------------------------------
-// Break node
-
-type breakError struct{}
-
-func (*breakError) Error() string { return "" }
-
-type BreakNode struct{}
-
-func (*BreakNode) Execute(e execute.Environment) (execute.Value, error) {
-	return nil, &breakError{}
-}
-
-// -------------------------------------------------------------------------------------------------
 // Binary operator node
 
 type BinaryOpNode struct {
@@ -70,6 +57,19 @@ func (n *BinaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 		return nil, err
 	}
 	return n.Op.Value(le, re)
+}
+
+// -------------------------------------------------------------------------------------------------
+// Break node
+
+type breakError struct{}
+
+func (*breakError) Error() string { return "" }
+
+type BreakNode struct{}
+
+func (*BreakNode) Execute(e *execute.Environment) (execute.Value, error) {
+	return types.Null, &breakError{}
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -120,8 +120,8 @@ func (*continueError) Error() string { return "" }
 
 type ContinueNode struct{}
 
-func (*ContinueNode) Execute(e execute.Environment) (execute.Value, error) {
-	return nil, &continueError{}
+func (*ContinueNode) Execute(e *execute.Environment) (execute.Value, error) {
+	return types.Null, &continueError{}
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -133,8 +133,8 @@ func (*fallthroughError) Error() string { return "" }
 
 type FallthroughNode struct{}
 
-func (*FallthroughNode) Execute(e execute.Environment) (execute.Value, error) {
-	return nil, &fallthroughError{}
+func (*FallthroughNode) Execute(e *execute.Environment) (execute.Value, error) {
+	return types.Null, &fallthroughError{}
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -218,18 +218,6 @@ func (n *IfNode) Execute(e *execute.Environment) (execute.Value, error) {
 		return n.ElseBody.Execute(frame)
 	}
 }
-
-// // -------------------------------------------------------------------------------------------------
-// // Ignore value node (used to ignore the value an expression evaluates to)
-
-// type IgnoreValueNode struct {
-// 	Expr execute.Expression
-// }
-
-// func (n *IgnoreValueNode) Execute(e *execute.Environment) (execute.Value, error) {
-// 	_, err := n.Expr.Execute(e)
-// 	return err
-// }
 
 // -------------------------------------------------------------------------------------------------
 // List node
@@ -373,7 +361,11 @@ func (n *WhileNode) Execute(e *execute.Environment) (execute.Value, error) {
 		}
 		if expr.ToBool() {
 			val, err = n.Body.Execute(frame)
-			if err != nil { // TODO: handle break, fallthrough
+			if _, ok := err.(*breakError); ok {
+				break
+			} else if _, ok := err.(*continueError); ok {
+				continue
+			} else if err != nil {
 				return nil, err
 			}
 		} else {

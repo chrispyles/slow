@@ -127,6 +127,11 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 	if c == "" || c == "\n" {
 		return val, nil
 	}
+	if c == "{" {
+		// This is the beginning of a block, which should be parsed by the caller.
+		buf.MoveBack()
+		return val, nil
+	}
 	if op, ok := operators.ToBinaryOp(c); ok {
 		c := buf.Pop()
 		var right execute.Expression
@@ -323,6 +328,27 @@ func parseBlock(buf *Buffer) (execute.Block, error) {
 	return b, nil
 }
 
+func parseBreak(buf *Buffer) (execute.Expression, error) {
+	if c := buf.Current(); c != "\n" {
+		return nil, errors.UnexpectedSymbolError(buf, c, "\n")
+	}
+	return &BreakNode{}, nil
+}
+
+func parseContinue(buf *Buffer) (execute.Expression, error) {
+	if c := buf.Current(); c != "\n" {
+		return nil, errors.UnexpectedSymbolError(buf, c, "\n")
+	}
+	return &ContinueNode{}, nil
+}
+
+func parseFallthrough(buf *Buffer) (execute.Expression, error) {
+	if c := buf.Current(); c != "\n" {
+		return nil, errors.UnexpectedSymbolError(buf, c, "\n")
+	}
+	return &FallthroughNode{}, nil
+}
+
 func parseFor(buf *Buffer) (execute.Expression, error) {
 	iterName := buf.Pop()
 	if err := validateSymbol(buf, iterName); err != nil {
@@ -459,11 +485,15 @@ func consumeNewlines(buf *Buffer) {
 func init() {
 	keywords = map[string]parser{
 		// conditionals
-		"if": parseIf,
+		"if":          parseIf,
+		"switch":      parseSwitch,
+		"fallthrough": parseFallthrough,
 
 		// iteration
-		"for":   parseFor,
-		"while": parseWhile,
+		"for":      parseFor,
+		"while":    parseWhile,
+		"break":    parseBreak,
+		"continue": parseContinue,
 
 		// functions
 		"func":   parseFunc,

@@ -27,7 +27,7 @@ type Value interface {
 	Length() (uint64, error)
 	String() string
 	ToBool() bool
-	ToCallable() (Callable, error) // TODO: rename to func?
+	ToCallable() (Callable, error)
 	ToFloat() (float64, error)
 	ToInt() (int64, error)
 	ToIterator() (Iterator, error)

@@ -38,7 +38,7 @@ func eval(s string, env *execute.Environment, printOut bool) {
 
 	// A nil value should never be returned by evaluating an expression unless err is non-nil.
 	if val == nil {
-		panic(fmt.Errorf("ast.Execute returned nil"))
+		panic("ast.Execute returned nil")
 	}
 
 	if printOut && val != types.Null {
@@ -54,7 +54,7 @@ func eval(s string, env *execute.Environment, printOut bool) {
 func main() {
 	flag.Parse()
 	if flag.NArg() > 1 {
-		// TODO: error bc there can only be 1 file run at a time
+		panic(fmt.Errorf("slow accepts 0 or 1 arguments, not %d", flag.NArg()))
 	}
 
 	env := builtins.NewRootEnvironment()
@@ -76,7 +76,6 @@ func main() {
 			fmt.Print("whisper to me> ")
 			line, err := rdr.ReadString('\n')
 			if err != nil {
-				// TODO: handle more gracefully
 				panic(err)
 			}
 

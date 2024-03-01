@@ -44,5 +44,5 @@ func (e *Environment) Set(n string, v Value) (Value, error) {
 	if e.parent != nil {
 		return e.parent.Set(n, v)
 	}
-	return nil, errors.NewNameError(n) // TODO: add message like "var has not been declared"
+	return nil, errors.NewNameError(n)
 }

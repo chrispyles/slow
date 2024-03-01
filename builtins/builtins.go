@@ -52,7 +52,7 @@ var builtins = []struct {
 		name: "range",
 		f: func(vs ...execute.Value) (execute.Value, error) {
 			// TODO: make this into a generator once available so all values aren't coalesced
-			// TODO: support more than just 1 arg
+			// TODO: support step argument
 			lower := int64(0)
 			upper, err := vs[0].ToInt()
 			if err != nil {

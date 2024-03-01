@@ -11,5 +11,5 @@ func NewNameError(n string) *NameError {
 }
 
 func (e *NameError) Error() string {
-	return fmt.Sprintf("NameError: no such variable %q", e.name)
+	return fmt.Sprintf("NameError: no variable %q has been declared", e.name)
 }
