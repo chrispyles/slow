@@ -400,6 +400,9 @@ func ToTernaryOp(maybeOp string) (TernaryOperator, bool) {
 	return TernOp_EMPTY, false
 }
 
-func must[T any](v T, _ error) T {
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
 	return v
 }
