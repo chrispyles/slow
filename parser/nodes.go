@@ -2,6 +2,7 @@ package parser
 
 import (
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/operators"
 	"github.com/chrispyles/slow/types"
 )
 
@@ -54,7 +55,7 @@ func (*BreakNode) Execute(e execute.Environment) (execute.Value, error) {
 // Binary operator node
 
 type BinaryOpNode struct {
-	Op    BinaryOperator
+	Op    operators.BinaryOperator
 	Left  execute.Expression
 	Right execute.Expression
 }
@@ -308,7 +309,7 @@ func (n *SwitchNode) Execute(e *execute.Environment) (execute.Value, error) {
 // Unary operator node
 
 type UnaryOpNode struct {
-	Op   UnaryOperator
+	Op   operators.UnaryOperator
 	Expr execute.Expression
 }
 

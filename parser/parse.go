@@ -7,6 +7,7 @@ import (
 	"github.com/chrispyles/slow/config"
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/operators"
 	"github.com/chrispyles/slow/types"
 	goerrors "github.com/pkg/errors"
 	"github.com/sanity-io/litter"
@@ -81,7 +82,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 	if contExpr == nil {
 		tkn := buf.Pop()
 		// unary operators come before their operands, so check if the token is a unary operator
-		if op, ok := toUnaryOp(tkn); ok {
+		if op, ok := operators.ToUnaryOp(tkn); ok {
 			c := buf.Pop()
 			var expr execute.Expression
 			if c == "(" {
@@ -126,10 +127,10 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 	if c == "" || c == "\n" {
 		return val, nil
 	}
-	if op, ok := toBinaryOp(c); ok {
+	if op, ok := operators.ToBinaryOp(c); ok {
 		c := buf.Pop()
 		var right execute.Expression
-		if uop, ok := toUnaryOp(c); ok {
+		if uop, ok := operators.ToUnaryOp(c); ok {
 			rightOperand, err := evaluateLiteralToken(buf.Pop(), buf)
 			if err != nil {
 				return nil, err
@@ -152,7 +153,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		}
 		node := &BinaryOpNode{Op: op, Left: val, Right: right}
 		// check if this is a chain of binary ops
-		nextOp, ok := toBinaryOp(buf.Current())
+		nextOp, ok := operators.ToBinaryOp(buf.Current())
 		for ok {
 			buf.Pop() // pop operator token
 			if buf.Current() == "\n" {
@@ -163,10 +164,10 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 				return nil, err
 			}
 			node = addNewBinOp(node, nextOp, right)
-			nextOp, ok = toBinaryOp(buf.Current())
+			nextOp, ok = operators.ToBinaryOp(buf.Current())
 		}
 		return node, nil
-	} else if _, ok := toTernaryOp(c); ok {
+	} else if _, ok := operators.ToTernaryOp(c); ok {
 		// TODO: parse tern op
 		return nil, nil
 	} else if c == "." {
@@ -204,7 +205,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 }
 
 // addNewBinOp adds a new operation to the provided tree of binary operations.
-func addNewBinOp(n *BinaryOpNode, op BinaryOperator, val execute.Expression) *BinaryOpNode {
+func addNewBinOp(n *BinaryOpNode, op operators.BinaryOperator, val execute.Expression) *BinaryOpNode {
 	if n.Op.Compare(op) {
 		return &BinaryOpNode{Op: op, Left: n, Right: val}
 	} else {

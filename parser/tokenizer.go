@@ -2,6 +2,8 @@ package parser
 
 import (
 	"strings"
+
+	"github.com/chrispyles/slow/operators"
 )
 
 var (
@@ -78,9 +80,9 @@ func isDelimeter(c byte) bool {
 }
 
 func isOperator(s string) bool {
-	_, u := toUnaryOp(s)
-	_, b := toBinaryOp(s)
-	_, t := toTernaryOp(s)
+	_, u := operators.ToUnaryOp(s)
+	_, b := operators.ToBinaryOp(s)
+	_, t := operators.ToTernaryOp(s)
 	return u || b || t
 }
 

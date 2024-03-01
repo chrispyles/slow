@@ -1,6 +1,4 @@
-package parser
-
-// TODO: move this stuff to a new package
+package operators
 
 import (
 	"math"
@@ -30,7 +28,7 @@ var allUnOps = map[UnaryOperator]bool{
 }
 
 // TODO: this is duplication w/ above is annoying
-func toUnaryOp(maybeOp string) (UnaryOperator, bool) {
+func ToUnaryOp(maybeOp string) (UnaryOperator, bool) {
 	op := UnaryOperator(maybeOp)
 	if allUnOps[op] {
 		return op, true
@@ -101,7 +99,7 @@ var allBinOps = map[BinaryOperator]bool{
 	BinOp_GEQ:   true,
 }
 
-func toBinaryOp(maybeOp string) (BinaryOperator, bool) {
+func ToBinaryOp(maybeOp string) (BinaryOperator, bool) {
 	op := BinaryOperator(maybeOp)
 	if allBinOps[op] {
 		return op, true
@@ -398,10 +396,10 @@ const (
 	TernOp_EMPTY TernaryOperator = ""
 )
 
-func toTernaryOp(maybeOp string) (TernaryOperator, bool) {
+func ToTernaryOp(maybeOp string) (TernaryOperator, bool) {
 	return TernOp_EMPTY, false
 }
 
-func must[T any](v T, err error) T {
+func must[T any](v T, _ error) T {
 	return v
 }

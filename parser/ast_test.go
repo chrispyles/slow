@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/operators"
 	"github.com/chrispyles/slow/types"
 	"github.com/google/go-cmp/cmp"
 )
@@ -150,7 +151,7 @@ for x in range(1, 20) {
 					},
 					&WhileNode{
 						Cond: &BinaryOpNode{
-							Op: BinOp_NEQ,
+							Op: operators.BinOp_NEQ,
 							Left: &VariableNode{
 								Name: "x",
 							},
@@ -161,9 +162,9 @@ for x in range(1, 20) {
 						Body: execute.Block{
 							&IfNode{
 								Cond: &BinaryOpNode{
-									Op: BinOp_EQ,
+									Op: operators.BinOp_EQ,
 									Left: &BinaryOpNode{
-										Op: BinOp_MOD,
+										Op: operators.BinOp_MOD,
 										Left: &VariableNode{
 											Name: "x",
 										},
@@ -179,7 +180,7 @@ for x in range(1, 20) {
 									&AssignmentNode{
 										Left: "x",
 										Right: &BinaryOpNode{
-											Op: BinOp_DIV,
+											Op: operators.BinOp_DIV,
 											Left: &VariableNode{
 												Name: "x",
 											},
@@ -193,9 +194,9 @@ for x in range(1, 20) {
 									&AssignmentNode{
 										Left: "x",
 										Right: &BinaryOpNode{
-											Op: BinOp_PLUS,
+											Op: operators.BinOp_PLUS,
 											Left: &BinaryOpNode{
-												Op: BinOp_TIMES,
+												Op: operators.BinOp_TIMES,
 												Left: &ConstantNode{
 													Value: types.NewInt(3),
 												},
