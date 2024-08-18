@@ -16,6 +16,10 @@ func NewFloat(v float64) *Float {
 	return &Float{v}
 }
 
+func (v *Float) CloneIfPrimitive() execute.Value {
+	return NewFloat(v.value)
+}
+
 func (v *Float) Equals(o execute.Value) bool {
 	of, ok := o.(*Float)
 	if !ok {

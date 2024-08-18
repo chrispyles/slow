@@ -20,11 +20,15 @@ type Type interface {
 }
 
 type Value interface {
+	// CloneIfPrimitive returns a copy of this value object if it is a primitive (i.e. pass-by-value).
+	// Values that are pass-by-reference should return a reference to the same instance.
+	CloneIfPrimitive() Value
 	// N.B. Equals() should return false if the value is not of the same type (i.e.
 	// int(1) != float(1) for the purposes of this method).
 	Equals(Value) bool
 	GetAttribute(string) (Value, error)
 	Length() (uint64, error)
+	// String returns the formatted representation of the value, like __repr__ in Python.
 	String() string
 	ToBool() bool
 	ToCallable() (Callable, error)

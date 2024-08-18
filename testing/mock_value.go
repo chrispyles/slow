@@ -43,6 +43,10 @@ type MockValue struct {
 	TypeRet *MockType
 }
 
+func (m *MockValue) CloneIfPrimitive() execute.Value {
+	return m
+}
+
 func (m *MockValue) Equals(execute.Value) bool {
 	return m.EqualsRet
 }

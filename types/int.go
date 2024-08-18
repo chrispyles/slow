@@ -15,6 +15,10 @@ func NewInt(v int64) *Int {
 	return &Int{v}
 }
 
+func (v *Int) CloneIfPrimitive() execute.Value {
+	return NewInt(v.value)
+}
+
 func (v *Int) Equals(o execute.Value) bool {
 	of, ok := o.(*Int)
 	if !ok {

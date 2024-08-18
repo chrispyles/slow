@@ -7,10 +7,14 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
-type ReturnError struct{}
+// ReturnError is an error that indicates that a return statement has been executed.
+type ReturnError struct {
+	Value execute.Value
+}
 
 func (*ReturnError) Error() string { return "" }
 
+// FuncImpl is a function whose logic is implemented in Go, for builtins.
 type FuncImpl func(...execute.Value) (execute.Value, error)
 
 type Func struct {
@@ -47,16 +51,20 @@ func (v *Func) Call(env *execute.Environment, args ...execute.Value) (execute.Va
 		}
 	}
 	for _, expr := range v.body {
-		val, err := expr.Execute(env)
+		_, err := expr.Execute(env)
 		if err != nil {
-			if _, ok := err.(*ReturnError); ok {
-				return val, nil
+			if re, ok := err.(*ReturnError); ok {
+				return re.Value, nil
 			}
 			return nil, err
 		}
 	}
 	// A function with no return statement returns null.
 	return Null, nil
+}
+
+func (v *Func) CloneIfPrimitive() execute.Value {
+	return v
 }
 
 func (v *Func) Equals(o execute.Value) bool {

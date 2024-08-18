@@ -16,6 +16,10 @@ func NewStr(v string) *Str {
 	return &Str{value: v}
 }
 
+func (v *Str) CloneIfPrimitive() execute.Value {
+	return NewStr(v.value)
+}
+
 func (v *Str) Equals(o execute.Value) bool {
 	of, ok := o.(*Str)
 	if !ok {
@@ -37,10 +41,7 @@ func (v *Str) String() string {
 }
 
 func (v *Str) ToBool() bool {
-	if v.value == "" {
-		return false
-	}
-	return true
+	return v.value != ""
 }
 
 func (v *Str) ToCallable() (execute.Callable, error) {
@@ -56,6 +57,7 @@ func (v *Str) ToInt() (int64, error) {
 }
 
 func (v *Str) ToIterator() (execute.Iterator, error) {
+	// TODO: string iterator
 	return nil, errors.NewTypeError(v.Type(), IteratorType)
 }
 

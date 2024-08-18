@@ -5,6 +5,7 @@ import "github.com/chrispyles/slow/errors"
 type Environment struct {
 	values map[string]Value
 	parent *Environment
+	frozen bool
 }
 
 func NewEnvironment() *Environment {
@@ -12,6 +13,10 @@ func NewEnvironment() *Environment {
 }
 
 func (e *Environment) Declare(n string) error {
+	if e.frozen {
+		// TODO: should this return an error instead of panicking?
+		panic("can't bind create or set variables in a frozen environment")
+	}
 	if _, ok := e.values[n]; ok {
 		return errors.NewDeclarationError(n)
 	}
@@ -37,12 +42,22 @@ func (e *Environment) NewFrame() *Environment {
 }
 
 func (e *Environment) Set(n string, v Value) (Value, error) {
+	if e.frozen {
+		// TODO: should this return an error instead of panicking?
+		panic("can't bind create or set variables in a frozen environment")
+	}
 	if _, ok := e.values[n]; ok {
 		e.values[n] = v
 		return v, nil
 	}
-	if e.parent != nil {
+	// The condition below assumes that if the parent frame is frozen, all ancestor frames are also
+	// frozen.
+	if e.parent != nil && !e.parent.frozen {
 		return e.parent.Set(n, v)
 	}
 	return nil, errors.NewNameError(n)
+}
+
+func (e *Environment) Freeze() {
+	e.frozen = true
 }

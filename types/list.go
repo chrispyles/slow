@@ -28,6 +28,10 @@ func NewList(vs []execute.Value) *List {
 	return &List{values: vs}
 }
 
+func (v *List) CloneIfPrimitive() execute.Value {
+	return v
+}
+
 func (v *List) Equals(o execute.Value) bool {
 	if l2, ok := o.(*List); ok {
 		return v == l2

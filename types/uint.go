@@ -15,6 +15,10 @@ func NewUint(v uint64) *Uint {
 	return &Uint{v}
 }
 
+func (v *Uint) CloneIfPrimitive() execute.Value {
+	return NewUint(v.value)
+}
+
 func (v *Uint) Equals(o execute.Value) bool {
 	of, ok := o.(*Uint)
 	if !ok {

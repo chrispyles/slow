@@ -10,6 +10,10 @@ type null struct{}
 
 var Null = &null{}
 
+func (v *null) CloneIfPrimitive() execute.Value {
+	return Null
+}
+
 func (v *null) Equals(o execute.Value) bool {
 	return o == Null
 }

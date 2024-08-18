@@ -61,6 +61,25 @@ var FuncType = &funcType{}
 
 // -------------------------------------------------------------------------------------------------
 
+type generatorType struct{}
+
+func (t *generatorType) IsNumeric() bool {
+	return false
+}
+
+func (t *generatorType) Matches(o execute.Type) bool {
+	_, ok := o.(*generatorType)
+	return ok
+}
+
+func (t *generatorType) String() string {
+	return "generator"
+}
+
+var GeneratorType = &generatorType{}
+
+// -------------------------------------------------------------------------------------------------
+
 type intType struct{}
 
 func (t *intType) IsNumeric() bool {

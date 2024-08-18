@@ -15,6 +15,10 @@ func NewBool(v bool) *Bool {
 	return &Bool{v}
 }
 
+func (v *Bool) CloneIfPrimitive() execute.Value {
+	return NewBool(v.value)
+}
+
 func (v *Bool) Equals(o execute.Value) bool {
 	ob, ok := o.(*Bool)
 	if !ok {

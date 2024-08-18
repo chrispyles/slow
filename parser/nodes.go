@@ -250,7 +250,7 @@ func (n *ReturnNode) Execute(e *execute.Environment) (execute.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	return value, &types.ReturnError{}
+	return nil, &types.ReturnError{Value: value}
 }
 
 // -------------------------------------------------------------------------------------------------

@@ -42,7 +42,15 @@ var builtins = []struct {
 		name: "print",
 		f: func(vs ...execute.Value) (execute.Value, error) {
 			for _, v := range vs {
-				fmt.Print(v.String())
+				var out string
+				if s, ok := v.(*types.Str); ok {
+					// The Str.ToStr method returns the value without the delimiting quotes, so we use it here
+					// so as not to print the quotes when printing string values.
+					out, _ = s.ToStr()
+				} else {
+					out = v.String()
+				}
+				fmt.Print(out)
 			}
 			fmt.Print("\n")
 			return types.Null, nil
@@ -52,24 +60,31 @@ var builtins = []struct {
 		name: "range",
 		f: func(vs ...execute.Value) (execute.Value, error) {
 			// TODO: make this into a generator once available so all values aren't coalesced
-			// TODO: support step argument
-			lower := int64(0)
-			upper, err := vs[0].ToInt()
+			if len(vs) == 0 {
+				return nil, errors.CallError("range", len(vs), 1)
+			}
+			var lower execute.Value
+			var step execute.Value
+			upper := vs[0]
+			if len(vs) > 1 {
+				lower = upper
+				upper = vs[1]
+			} else {
+				lower = types.NewUint(0)
+			}
+			if len(vs) > 2 {
+				step = vs[2]
+			} else {
+				step = types.NewUint(1)
+			}
+			if len(vs) > 3 {
+				return nil, errors.CallError("range", len(vs), 3)
+			}
+			rg, err := newRangeGenerator(lower, upper, step)
 			if err != nil {
 				return nil, err
 			}
-			if len(vs) > 1 {
-				lower = upper
-				upper, err = vs[1].ToInt()
-				if err != nil {
-					return nil, err
-				}
-			}
-			values := []execute.Value{}
-			for i := lower; i < upper; i++ {
-				values = append(values, types.NewInt(i))
-			}
-			return types.NewList(values), nil
+			return types.NewGenerator(rg), nil
 		},
 	},
 	{
@@ -83,7 +98,8 @@ var builtins = []struct {
 	},
 }
 
-// NewRootEnvironment creates a new root environment populated with every builtin.
+// NewRootEnvironment creates a new root environment populated with every builtin. The returned
+// environment is frozen, so a child frame must be created from it before declaring any variables.
 func NewRootEnvironment() *execute.Environment {
 	e := execute.NewEnvironment()
 	for _, b := range builtins {
@@ -91,5 +107,7 @@ func NewRootEnvironment() *execute.Environment {
 		e.Declare(b.name)
 		e.Set(b.name, f)
 	}
+	// freeze the root environment so nothing is inadvertently overwritten
+	e.Freeze()
 	return e
 }

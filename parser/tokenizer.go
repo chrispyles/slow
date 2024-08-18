@@ -82,8 +82,7 @@ func isDelimeter(c byte) bool {
 func isOperator(s string) bool {
 	_, u := operators.ToUnaryOp(s)
 	_, b := operators.ToBinaryOp(s)
-	_, t := operators.ToTernaryOp(s)
-	return u || b || t
+	return u || b
 }
 
 func nextCandidateToken(line string, k int) (string, int) {
@@ -195,6 +194,14 @@ func (b *Buffer) Pop() string {
 	c := b.Current()
 	b.index++
 	return c
+}
+
+func (b *Buffer) ConsumeNewlines() {
+	tkn := b.Current()
+	for tkn == "\n" {
+		b.Pop()
+		tkn = b.Current()
+	}
 }
 
 func (b *Buffer) MoveBack() {

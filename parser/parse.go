@@ -15,10 +15,40 @@ import (
 	"github.com/sanity-io/litter"
 )
 
+// reserved keywords
+const (
+	// conditionals
+	kw_IF          = "if"
+	kw_ELSE        = "else"
+	kw_SWITCH      = "switch"
+	kw_CASE        = "case"
+	kw_DEFAULT     = "default"
+	kw_FALLTHROUGH = "fallthrough"
+
+	// iteration
+	kw_FOR      = "for"
+	kw_IN       = "in"
+	kw_WHILE    = "while"
+	kw_BREAK    = "break"
+	kw_CONTINUE = "continue"
+
+	// functions
+	kw_FUNC   = "func"
+	kw_RETURN = "return"
+
+	// declarations
+	kw_VAR = "var"
+
+	// values
+	kw_TRUE  = "true"
+	kw_FALSE = "false"
+	kw_NULL  = "null"
+)
+
 var (
 	intRegex    = regexp.MustCompile(`^\d+$`)
 	uintRegex   = regexp.MustCompile(`^\d+u$`)
-	floatRegex  = regexp.MustCompile(`^\d*\.\d+$`)
+	floatRegex  = regexp.MustCompile(`^\d*\.\d*$`)
 	symbolRegex = regexp.MustCompile(`^[A-Za-z_]\w*$`)
 )
 
@@ -27,10 +57,13 @@ var keywords map[string]parser
 // reservedKeywords is a set of keywords that cannot be used as symbols but which do not have a
 // dedicated parser.
 var reservedKeywords = map[string]bool{
-	"else":  true,
-	"true":  true,
-	"false": true,
-	"in":    true,
+	kw_ELSE:    true,
+	kw_CASE:    true,
+	kw_DEFAULT: true,
+	kw_IN:      true,
+	kw_TRUE:    true,
+	kw_FALSE:   true,
+	kw_NULL:    true,
 }
 
 func parse(s string) (execute.Block, error) {
@@ -58,7 +91,7 @@ func parse(s string) (execute.Block, error) {
 type parser func(*Buffer) (execute.Expression, error)
 
 func readBuffer(buf *Buffer) (execute.Expression, error) {
-	consumeNewlines(buf)
+	buf.ConsumeNewlines()
 	tkn := buf.Current()
 	if tkn == "" {
 		return nil, nil
@@ -85,24 +118,14 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		tkn := buf.Pop()
 		// unary operators come before their operands, so check if the token is a unary operator
 		if op, ok := operators.ToUnaryOp(tkn); ok {
-			c := buf.Pop()
-			var expr execute.Expression
-			if c == "(" {
-				expr, err = parseExpressionStart(buf)
-				if err != nil {
-					return nil, err
-				}
-				if buf.Current() != ")" {
-					return nil, errors.UnexpectedSymbolError(buf, buf.Current(), ")")
-				}
-				buf.Pop() // remove ")" from the buffer
-			} else {
-				expr, err = evaluateLiteralToken(c, buf)
-				if err != nil {
-					return nil, err
-				}
+			val, err = parseUnaryOperation(buf, op)
+		} else if tkn == "(" {
+			// This is the start of a parenthesized expression
+			val, err = parseExpressionStart(buf)
+			if err != nil {
+				return nil, err
 			}
-			val = &UnaryOpNode{Op: op, Expr: expr}
+			err = expectClose(buf, ")") // remove ")" from the buffer
 		} else if tkn == "[" {
 			// This is an inline list
 			values, err := parseArgList(buf, "]")
@@ -112,12 +135,12 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 			return &ListNode{Values: values}, nil
 		} else {
 			val, err = evaluateLiteralToken(tkn, buf)
-			if err != nil {
-				return nil, err
-			}
 		}
 	} else {
 		val = contExpr
+	}
+	if err != nil {
+		return nil, err
 	}
 	c := buf.Pop()
 	if c == "," || c == ")" || c == "]" {
@@ -135,95 +158,45 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		return val, nil
 	}
 	if op, ok := operators.ToBinaryOp(c); ok {
-		c := buf.Pop()
-		var right execute.Expression
-		if uop, ok := operators.ToUnaryOp(c); ok {
-			rightOperand, err := evaluateLiteralToken(buf.Pop(), buf)
-			if err != nil {
-				return nil, err
-			}
-			right = &UnaryOpNode{Op: uop, Expr: rightOperand}
-		} else if c == "(" {
-			right, err = parseExpressionStart(buf)
-			if err != nil {
-				return nil, err
-			}
-			if buf.Current() != ")" {
-				return nil, errors.UnexpectedSymbolError(buf, buf.Current(), ")")
-			}
-			buf.Pop() // remove ")" from the buffer
-		} else {
-			right, err = evaluateLiteralToken(c, buf)
-		}
-		if err != nil {
-			return nil, err
-		}
-		node := &BinaryOpNode{Op: op, Left: val, Right: right}
-		// check if this is a chain of binary ops
-		nextOp, ok := operators.ToBinaryOp(buf.Current())
-		for ok {
-			buf.Pop() // pop operator token
-			if buf.Current() == "\n" {
-				return nil, errors.NewSyntaxError(buf, "unexpected newline", "")
-			}
-			right, err := evaluateLiteralToken(buf.Pop(), buf)
-			if err != nil {
-				return nil, err
-			}
-			node = addNewBinOp(node, nextOp, right)
-			nextOp, ok = operators.ToBinaryOp(buf.Current())
-		}
-		return node, nil
-	} else if _, ok := operators.ToTernaryOp(c); ok {
+		return parseBinaryOperation(buf, op, val)
+	}
+	if c == "?" {
 		// TODO: parse tern op
 		return nil, nil
-	} else if c == "." {
+	}
+	if c == "." {
 		// This is a dot access
 		sym := buf.Pop()
 		if err := validateSymbol(buf, sym); err != nil {
 			return nil, err
 		}
 		return parseExpression(buf, &AttributeNode{Left: val, Right: sym})
-	} else if c == "=" {
+	}
+	if c == "=" {
 		// This is a variable assignment
-		if varNode, ok := val.(*VariableNode); !ok {
+		varNode, ok := val.(*VariableNode)
+		if !ok {
 			return nil, errors.NewSyntaxError(buf, "cannot assign to non-symbol", "")
-		} else {
-			right, err := parseExpressionStart(buf)
-			if err != nil {
-				return nil, err
-			}
-			return &AssignmentNode{Left: varNode.Name, Right: right}, nil
 		}
-	} else if c == "(" {
+		right, err := parseExpressionStart(buf)
+		if err != nil {
+			return nil, err
+		}
+		return &AssignmentNode{Left: varNode.Name, Right: right}, nil
+	}
+	if c == "(" {
 		// This is a function call
 		args, err := parseArgList(buf, ")")
 		if err != nil {
 			return nil, err
 		}
 		return &CallNode{Func: val, Args: args}, nil
-	} else if c == "[" {
+	}
+	if c == "[" {
 		// TODO: indexing
 		return nil, nil
-	} else {
-		return nil, errors.UnexpectedSymbolError(buf, c, "")
 	}
-}
-
-// addNewBinOp adds a new operation to the provided tree of binary operations.
-func addNewBinOp(n *BinaryOpNode, op operators.BinaryOperator, val execute.Expression) *BinaryOpNode {
-	if n.Op.Compare(op) {
-		return &BinaryOpNode{Op: op, Left: n, Right: val}
-	} else {
-		var child *BinaryOpNode
-		if nr, ok := n.Right.(*BinaryOpNode); ok {
-			child = addNewBinOp(nr, op, val)
-		} else {
-			child = &BinaryOpNode{Op: op, Left: n.Right, Right: val}
-		}
-		n.Right = child
-		return n
-	}
+	return nil, errors.UnexpectedSymbolError(buf, c, "")
 }
 
 func parseArgList(buf *Buffer, endToken string) ([]execute.Expression, error) {
@@ -258,7 +231,8 @@ func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, er
 			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as int", tkn))
 		}
 		return &ConstantNode{Value: types.NewInt(intValue)}, nil
-	} else if uintRegex.Match(tknBytes) {
+	}
+	if uintRegex.Match(tknBytes) {
 		// Remove trailing "u" from uint syntax
 		numerals := tkn[:len(tkn)-1]
 		uintValue, err := strconv.ParseUint(numerals, 10, 64)
@@ -269,7 +243,8 @@ func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, er
 			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as uint", tkn))
 		}
 		return &ConstantNode{Value: types.NewUint(uintValue)}, nil
-	} else if floatRegex.Match(tknBytes) {
+	}
+	if floatRegex.Match(tknBytes) {
 		floatValue, err := strconv.ParseFloat(tkn, 64)
 		if err != nil {
 			if *config.Debug {
@@ -278,23 +253,31 @@ func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, er
 			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as float", tkn))
 		}
 		return &ConstantNode{Value: types.NewFloat(floatValue)}, nil
-	} else if tkn == "true" {
-		return &ConstantNode{Value: types.NewBool(true)}, nil
-	} else if tkn == "false" {
-		return &ConstantNode{Value: types.NewBool(false)}, nil
-	} else if tkn == "null" {
-		return &ConstantNode{Value: types.Null}, nil
-	} else {
-		if err := validateSymbol(buf, tkn); err != nil {
-			return nil, err
-		}
-		return &VariableNode{Name: tkn}, nil
 	}
+	if tkn[0] == stringDelim {
+		if tkn[len(tkn)-1] != stringDelim {
+			return nil, errors.NewSyntaxError(buf, "unclosed string", string(stringDelim))
+		}
+		return &ConstantNode{Value: types.NewStr(tkn[1 : len(tkn)-1])}, nil
+	}
+	if tkn == kw_TRUE {
+		return &ConstantNode{Value: types.NewBool(true)}, nil
+	}
+	if tkn == kw_FALSE {
+		return &ConstantNode{Value: types.NewBool(false)}, nil
+	}
+	if tkn == kw_NULL {
+		return &ConstantNode{Value: types.Null}, nil
+	}
+	if err := validateSymbol(buf, tkn); err != nil {
+		return nil, err
+	}
+	return &VariableNode{Name: tkn}, nil
+
 }
 
 func validateSymbol(buf errors.Buffer, tkn string) error {
 	if !symbolRegex.Match([]byte(tkn)) {
-		// TODO: more helpful error message, esp. for AttributeNode case
 		var err error = errors.NewSyntaxError(buf, "invalid symbol", tkn)
 		if *config.Debug {
 			err = goerrors.WithStack(err)
@@ -302,7 +285,6 @@ func validateSymbol(buf errors.Buffer, tkn string) error {
 		return err
 	}
 	if reservedKeywords[tkn] {
-		// TODO: more helpful error message
 		return errors.NewSyntaxError(buf, "unexpected keyword", tkn)
 	}
 	return nil
@@ -316,7 +298,7 @@ func parseBlock(buf *Buffer) (execute.Block, error) {
 	}
 	var b execute.Block
 	for {
-		consumeNewlines(buf)
+		buf.ConsumeNewlines()
 		if buf.Current() == "}" {
 			buf.Pop() // remove "}" from the buffer
 			break
@@ -333,6 +315,64 @@ func parseBlock(buf *Buffer) (execute.Block, error) {
 		b = append(b, expr)
 	}
 	return b, nil
+}
+
+func parseBinaryOperation(buf *Buffer, op operators.BinaryOperator, left execute.Expression) (execute.Expression, error) {
+	var right execute.Expression
+	var err error
+	c := buf.Pop()
+	if uop, ok := operators.ToUnaryOp(c); ok {
+		rightOperand, err := evaluateLiteralToken(buf.Pop(), buf)
+		if err != nil {
+			return nil, err
+		}
+		right = &UnaryOpNode{Op: uop, Expr: rightOperand}
+	} else if c == "(" {
+		right, err = parseExpressionStart(buf)
+		if err != nil {
+			return nil, err
+		}
+		expectClose(buf, ")") // remove ")" from the buffer
+	} else {
+		right, err = evaluateLiteralToken(c, buf)
+	}
+	if err != nil {
+		return nil, err
+	}
+	node := &BinaryOpNode{Op: op, Left: left, Right: right}
+	// check if this is a chain of binary ops
+	nextOp, ok := operators.ToBinaryOp(buf.Current())
+	for ok {
+		buf.Pop() // pop operator token
+		if buf.Current() == "\n" {
+			return nil, errors.NewSyntaxError(buf, "unexpected newline", "")
+		}
+		right, err := evaluateLiteralToken(buf.Pop(), buf)
+		if err != nil {
+			return nil, err
+		}
+		node = addNewBinOp(node, nextOp, right)
+		nextOp, ok = operators.ToBinaryOp(buf.Current())
+	}
+	return node, nil
+}
+
+// addNewBinOp adds a new operation to the provided tree of binary operations.
+func addNewBinOp(n *BinaryOpNode, op operators.BinaryOperator, val execute.Expression) *BinaryOpNode {
+	if n.Op.Compare(op) {
+		// The existing BinaryOpNode has a higher precedence than op, so put it lower in the AST.
+		return &BinaryOpNode{Op: op, Left: n, Right: val}
+	}
+	// The new operator (op) has a higher precedence than BinaryOpNode, so adjust the tree so the new
+	// node is inserted lower.
+	var child *BinaryOpNode
+	if nr, ok := n.Right.(*BinaryOpNode); ok {
+		child = addNewBinOp(nr, op, val)
+	} else {
+		child = &BinaryOpNode{Op: op, Left: n.Right, Right: val}
+	}
+	n.Right = child
+	return n
 }
 
 func parseBreak(buf *Buffer) (execute.Expression, error) {
@@ -361,8 +401,8 @@ func parseFor(buf *Buffer) (execute.Expression, error) {
 	if err := validateSymbol(buf, iterName); err != nil {
 		return nil, err
 	}
-	if c := buf.Pop(); c != "in" { // TODO: should keywords be in constants?
-		return nil, errors.UnexpectedSymbolError(buf, c, "in")
+	if c := buf.Pop(); c != kw_IN {
+		return nil, errors.UnexpectedSymbolError(buf, c, kw_IN)
 	}
 	iter, err := parseExpressionStart(buf)
 	if err != nil {
@@ -414,8 +454,8 @@ func parseIf(buf *Buffer) (execute.Expression, error) {
 		return nil, err
 	}
 	node := &IfNode{Cond: cond, Body: body}
-	consumeNewlines(buf)
-	if buf.Current() == "else" {
+	buf.ConsumeNewlines()
+	if buf.Current() == kw_ELSE {
 		buf.Pop() // remove "else" from the buffer
 		var elseBody execute.Block
 		if buf.Current() == "{" {
@@ -423,7 +463,7 @@ func parseIf(buf *Buffer) (execute.Expression, error) {
 			if err != nil {
 				return nil, err
 			}
-		} else if buf.Current() == "if" {
+		} else if buf.Current() == kw_IF {
 			buf.Pop() // remove "if" from the buffer
 			elseIfBody, err := parseIf(buf)
 			if err != nil {
@@ -449,6 +489,25 @@ func parseReturn(buf *Buffer) (execute.Expression, error) {
 func parseSwitch(buf *Buffer) (execute.Expression, error) {
 	// TODO
 	return nil, nil
+}
+
+func parseUnaryOperation(buf *Buffer, op operators.UnaryOperator) (execute.Expression, error) {
+	var expr execute.Expression
+	var err error
+	c := buf.Pop()
+	if c == "(" {
+		expr, err = parseExpressionStart(buf)
+		if err != nil {
+			return nil, err
+		}
+		expectClose(buf, ")") // remove ")" from the buffer
+	} else {
+		expr, err = evaluateLiteralToken(c, buf)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &UnaryOpNode{Op: op, Expr: expr}, nil
 }
 
 func parseVar(buf *Buffer) (execute.Expression, error) {
@@ -481,32 +540,32 @@ func parseWhile(buf *Buffer) (execute.Expression, error) {
 	return &WhileNode{Cond: cond, Body: body}, nil
 }
 
-func consumeNewlines(buf *Buffer) {
-	tkn := buf.Current()
-	for tkn == "\n" {
-		buf.Pop()
-		tkn = buf.Current()
+func expectClose(buf *Buffer, wantChar string) error {
+	if c := buf.Current(); c != wantChar {
+		return errors.UnexpectedSymbolError(buf, c, wantChar)
 	}
+	buf.Pop()
+	return nil
 }
 
 func init() {
 	keywords = map[string]parser{
 		// conditionals
-		"if":          parseIf,
-		"switch":      parseSwitch,
-		"fallthrough": parseFallthrough,
+		kw_IF:          parseIf,
+		kw_SWITCH:      parseSwitch,
+		kw_FALLTHROUGH: parseFallthrough,
 
 		// iteration
-		"for":      parseFor,
-		"while":    parseWhile,
-		"break":    parseBreak,
-		"continue": parseContinue,
+		kw_FOR:      parseFor,
+		kw_WHILE:    parseWhile,
+		kw_BREAK:    parseBreak,
+		kw_CONTINUE: parseContinue,
 
 		// functions
-		"func":   parseFunc,
-		"return": parseReturn,
+		kw_FUNC:   parseFunc,
+		kw_RETURN: parseReturn,
 
 		// declarations
-		"var": parseVar,
+		kw_VAR: parseVar,
 	}
 }
