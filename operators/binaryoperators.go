@@ -12,8 +12,9 @@ type BinaryOperator string
 
 // TODO: and, or, xor
 const (
-	// TODO: +=, -=, *=, /=, %=, //=
 	BinOp_EMPTY BinaryOperator = ""
+
+	// arithmetic operators
 	BinOp_PLUS  BinaryOperator = "+"
 	BinOp_MINUS BinaryOperator = "-"
 	BinOp_TIMES BinaryOperator = "*"
@@ -21,28 +22,64 @@ const (
 	BinOp_MOD   BinaryOperator = "%"
 	BinOp_FDIV  BinaryOperator = "//"
 	BinOp_EXP   BinaryOperator = "**"
-	BinOp_EQ    BinaryOperator = "=="
-	BinOp_NEQ   BinaryOperator = "!="
-	BinOp_LT    BinaryOperator = "<"
-	BinOp_LEQ   BinaryOperator = "<="
-	BinOp_GT    BinaryOperator = ">"
-	BinOp_GEQ   BinaryOperator = ">="
+
+	// reassignment operators
+	BinOp_RPLUS  BinaryOperator = "+="
+	BinOp_RMINUS BinaryOperator = "-="
+	BinOp_RTIMES BinaryOperator = "*="
+	BinOp_RDIV   BinaryOperator = "/="
+	BinOp_RMOD   BinaryOperator = "%="
+	BinOp_RFDIV  BinaryOperator = "//="
+	BinOp_REXP   BinaryOperator = "**="
+
+	// comparison operators
+	BinOp_EQ  BinaryOperator = "=="
+	BinOp_NEQ BinaryOperator = "!="
+	BinOp_LT  BinaryOperator = "<"
+	BinOp_LEQ BinaryOperator = "<="
+	BinOp_GT  BinaryOperator = ">"
+	BinOp_GEQ BinaryOperator = ">="
 )
 
 var allBinOps = map[BinaryOperator]bool{
-	BinOp_PLUS:  true,
-	BinOp_MINUS: true,
-	BinOp_TIMES: true,
-	BinOp_DIV:   true,
-	BinOp_MOD:   true,
-	BinOp_FDIV:  true,
-	BinOp_EXP:   true,
-	BinOp_EQ:    true,
-	BinOp_NEQ:   true,
-	BinOp_LT:    true,
-	BinOp_LEQ:   true,
-	BinOp_GT:    true,
-	BinOp_GEQ:   true,
+	BinOp_PLUS:   true,
+	BinOp_MINUS:  true,
+	BinOp_TIMES:  true,
+	BinOp_DIV:    true,
+	BinOp_MOD:    true,
+	BinOp_FDIV:   true,
+	BinOp_EXP:    true,
+	BinOp_RPLUS:  true,
+	BinOp_RMINUS: true,
+	BinOp_RTIMES: true,
+	BinOp_RDIV:   true,
+	BinOp_RMOD:   true,
+	BinOp_RFDIV:  true,
+	BinOp_REXP:   true,
+	BinOp_EQ:     true,
+	BinOp_NEQ:    true,
+	BinOp_LT:     true,
+	BinOp_LEQ:    true,
+	BinOp_GT:     true,
+	BinOp_GEQ:    true,
+}
+
+var reassignmentToArithmeticOperator = map[BinaryOperator]BinaryOperator{
+	BinOp_RPLUS:  BinOp_PLUS,
+	BinOp_RMINUS: BinOp_MINUS,
+	BinOp_RTIMES: BinOp_TIMES,
+	BinOp_RDIV:   BinOp_DIV,
+	BinOp_RMOD:   BinOp_MOD,
+	BinOp_RFDIV:  BinOp_FDIV,
+	BinOp_REXP:   BinOp_EXP,
+}
+
+var incomparableTypes = map[execute.Type]bool{
+	types.FuncType:      true,
+	types.GeneratorType: true,
+	types.IteratorType:  true,
+	types.ListType:      true,
+	types.NullType:      true,
 }
 
 func ToBinaryOp(maybeOp string) (BinaryOperator, bool) {
@@ -54,6 +91,12 @@ func ToBinaryOp(maybeOp string) (BinaryOperator, bool) {
 }
 
 func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
+	// If this is a reassignment operator, convert it to its arithmetic version to calculate the new
+	// value.
+	if ao, ok := reassignmentToArithmeticOperator[o]; ok {
+		o = ao
+	}
+
 	lt, rt := l.Type(), r.Type()
 	if o == BinOp_MOD {
 		// Floats with no remainder can be treated as ints.
@@ -77,9 +120,11 @@ func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 		return types.NewInt(must(l.ToInt()) % must(r.ToInt())), nil
 	}
 
-	caster, ok := NewTypeCaster(lt, rt)
+	caster, ok := newTypeCaster(lt, rt)
 	if o == BinOp_DIV {
-		// TODO: this should error if either rt or lt is not numeric
+		if !lt.IsNumeric() || !rt.IsNumeric() {
+			return nil, errors.IncompatibleTypes(lt, rt, o.String())
+		}
 		caster, ok = newFloatCaster()
 	}
 	if !ok {
@@ -91,103 +136,39 @@ func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 	}
 
 	if o.IsComparison() {
-		// Non-numeric types are always != to another value if it is of a different type, and are
-		// incomparable otherwise.
-		if (!lt.IsNumeric() || !rt.IsNumeric()) && lt != rt {
+		if incomparableTypes[lt] || incomparableTypes[rt] {
+			// These types are all pass-by-reference, and will be equal iff they are the same instance.
 			switch o {
 			case BinOp_EQ:
-				return types.NewBool(false), nil
+				return types.NewBool(lt == rt), nil
 			case BinOp_NEQ:
-				return types.NewBool(true), nil
+				return types.NewBool(lt != rt), nil
 			default:
 				return nil, errors.IncompatibleTypes(lt, rt, o.String())
 			}
 		}
-		if lt.IsNumeric() && rt.IsNumeric() {
-			lc, rc, err := doCast()
-			if err != nil {
-				return nil, err
-			}
-			r, err := compareNumeric(lc, rc)
-			if err != nil {
-				return nil, err
-			}
-			switch o {
-			case BinOp_EQ:
-				return types.NewBool(r == equalTo), nil
-			case BinOp_NEQ:
-				return types.NewBool(r != equalTo), nil
-			case BinOp_LT:
-				return types.NewBool(r == lessThan), nil
-			case BinOp_LEQ:
-				return types.NewBool(r == lessThan || r == equalTo), nil
-			case BinOp_GT:
-				return types.NewBool(r == greaterThan), nil
-			case BinOp_GEQ:
-				return types.NewBool(r == greaterThan || r == equalTo), nil
-			}
-		}
-		switch o {
-		// TODO: use Value.Equals()
-		case BinOp_EQ:
-			switch lt {
-			case types.FuncType:
-				return types.NewBool(l == r), nil
-			case types.NullType:
-				// null is a singleton, so if two values are of NullType, this must be true.
-				return types.NewBool(true), nil
-			case types.StrType:
-				return types.NewBool(must(l.ToStr()) == must(r.ToStr())), nil
-			}
-		case BinOp_NEQ:
-			switch lt {
-			case types.FuncType:
-				return types.NewBool(l != r), nil
-			case types.NullType:
-				// null is a singleton, so if two values are of NullType, this must be false.
-				return types.NewBool(false), nil
-			case types.StrType:
-				return types.NewBool(must(l.ToStr()) != must(r.ToStr())), nil
-			}
-		case BinOp_LT:
-			switch lt {
-			case types.FuncType:
-				fallthrough
-			case types.NullType:
-				return nil, errors.IncomparableType(lt, o.String())
-			case types.StrType:
-				return types.NewBool(must(l.ToStr()) < must(r.ToStr())), nil
-			}
-		case BinOp_LEQ:
-			switch lt {
-			case types.FuncType:
-				fallthrough
-			case types.NullType:
-				return nil, errors.IncomparableType(lt, o.String())
-			case types.StrType:
-				return types.NewBool(must(l.ToStr()) <= must(r.ToStr())), nil
-			}
-		case BinOp_GT:
-			switch lt {
-			case types.FuncType:
-				fallthrough
-			case types.NullType:
-				return nil, errors.IncomparableType(lt, o.String())
-			case types.StrType:
-				return types.NewBool(must(l.ToStr()) > must(r.ToStr())), nil
-			}
-		case BinOp_GEQ:
-			switch lt {
-			case types.FuncType:
-				fallthrough
-			case types.NullType:
-				return nil, errors.IncomparableType(lt, o.String())
-			case types.StrType:
-				return types.NewBool(must(l.ToStr()) >= must(r.ToStr())), nil
-			}
+
+		comparator, comparable := l.CompareTo(r)
+		if !comparable {
+			return nil, errors.IncompatibleTypes(lt, rt, o.String())
 		}
 
-		return nil, errors.IncompatibleTypes(lt, rt, o.String())
+		switch o {
+		case BinOp_EQ:
+			return types.NewBool(comparator == 0), nil
+		case BinOp_NEQ:
+			return types.NewBool(comparator != 0), nil
+		case BinOp_LT:
+			return types.NewBool(comparator < 0), nil
+		case BinOp_LEQ:
+			return types.NewBool(comparator <= 0), nil
+		case BinOp_GT:
+			return types.NewBool(comparator > 0), nil
+		case BinOp_GEQ:
+			return types.NewBool(comparator >= 0), nil
+		default:
+			panic("unhandled comparison operator in BinaryOperator.Value()")
+		}
 	}
 
 	lc, rc, err := doCast()
@@ -200,7 +181,6 @@ func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 		return nil, errors.NewZeroDivisionError()
 	}
 
-	// TODO: handle more types in all of these
 	switch o {
 	case BinOp_PLUS:
 		switch caster.dest {
@@ -210,6 +190,8 @@ func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 			return types.NewFloat(must(lc.ToFloat()) + must(rc.ToFloat())), nil
 		case types.IntType:
 			return types.NewInt(must(lc.ToInt()) + must(rc.ToInt())), nil
+		case types.StrType:
+			return types.NewStr(must(lc.ToStr()) + must(rc.ToStr())), nil
 		case types.UintType:
 			return types.NewUint(must(lc.ToUint()) + must(rc.ToUint())), nil
 		}
@@ -250,8 +232,7 @@ func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 			return types.NewUint(must(lc.ToUint()) / must(rc.ToUint())), nil
 		}
 	case BinOp_EXP:
-		// TODO: what happens if this receives non-numeric type?
-		if !caster.dest.IsNumeric() {
+		if !lt.IsNumeric() || !rt.IsNumeric() {
 			return nil, errors.IncompatibleType(caster.dest, o.String())
 		}
 		lf, rf := must(l.ToFloat()), must(r.ToFloat())
@@ -268,12 +249,21 @@ func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 		}
 	}
 
-	// TODO: return error
 	return nil, errors.IncompatibleTypes(lt, rt, o.String())
 }
 
 func (o BinaryOperator) IsComparison() bool {
-	return o == BinOp_EQ || o == BinOp_NEQ || o == BinOp_LT || o == BinOp_LEQ || o == BinOp_GT || o == BinOp_GEQ
+	return o == BinOp_EQ ||
+		o == BinOp_NEQ ||
+		o == BinOp_LT ||
+		o == BinOp_LEQ ||
+		o == BinOp_GT ||
+		o == BinOp_GEQ
+}
+
+func (o BinaryOperator) IsReassignmentOperator() bool {
+	_, ok := reassignmentToArithmeticOperator[o]
+	return ok
 }
 
 func (o BinaryOperator) String() string {

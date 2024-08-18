@@ -19,6 +19,20 @@ func (v *Int) CloneIfPrimitive() execute.Value {
 	return NewInt(v.value)
 }
 
+func (v *Int) CompareTo(o execute.Value) (int, bool) {
+	switch o.Type() {
+	case FloatType:
+		return compareNumbers(float64(v.value), must(o.ToFloat())), true
+	case BoolType:
+		fallthrough
+	case IntType:
+		fallthrough
+	case UintType:
+		return compareNumbers(v.value, must(o.ToInt())), true
+	}
+	return 0, false
+}
+
 func (v *Int) Equals(o execute.Value) bool {
 	of, ok := o.(*Int)
 	if !ok {

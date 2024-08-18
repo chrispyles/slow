@@ -6,7 +6,7 @@ var typeHierarchy = map[execute.Type]int{
 	FloatType: 0,
 	IntType:   1,
 	UintType:  2,
-	BoolType:  3, // TODO: validate that bool is treated like uint
+	BoolType:  3,
 }
 
 func CommonNumericType(t1 execute.Type, t2 execute.Type) (execute.Type, bool) {
@@ -23,4 +23,20 @@ func CommonNumericType(t1 execute.Type, t2 execute.Type) (execute.Type, bool) {
 	} else {
 		return t2, true
 	}
+}
+
+func compareNumbers[T float64 | int64 | uint64](v1, v2 T) int {
+	if v1 == v2 {
+		return 0
+	} else if v1 < v2 {
+		return -1
+	}
+	return 1
+}
+
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }

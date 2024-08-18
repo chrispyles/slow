@@ -105,8 +105,11 @@ func nextCandidateToken(line string, k int) (string, int) {
 			j := readUntilStringClose(line, k+1)
 			return line[k : j+1], j + 1
 		} else if operatorStarts[c] {
-			// operators are either 1 or 2 characters long, so check if this character and the next
+			// operators are either 1, 2, or 3 characters long, so check if this character and the next
 			// character form a valid operator
+			if k+2 < len(line) && isOperator(line[k:k+3]) {
+				return line[k : k+3], k + 3
+			}
 			if k+1 < len(line) && isOperator(line[k:k+2]) {
 				return line[k : k+2], k + 2
 			}

@@ -32,6 +32,10 @@ func (v *List) CloneIfPrimitive() execute.Value {
 	return v
 }
 
+func (v *List) CompareTo(o execute.Value) (int, bool) {
+	return 0, false
+}
+
 func (v *List) Equals(o execute.Value) bool {
 	if l2, ok := o.(*List); ok {
 		return v == l2

@@ -67,6 +67,10 @@ func (v *Func) CloneIfPrimitive() execute.Value {
 	return v
 }
 
+func (v *Func) CompareTo(o execute.Value) (int, bool) {
+	return 0, false
+}
+
 func (v *Func) Equals(o execute.Value) bool {
 	oc, err := o.ToCallable()
 	if err != nil {

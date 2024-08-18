@@ -56,7 +56,22 @@ func (n *BinaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	return n.Op.Value(le, re)
+	val, err := n.Op.Value(le, re)
+	if err != nil {
+		return nil, err
+	}
+	if n.Op.IsReassignmentOperator() {
+		switch n.Left.(type) {
+		case *VariableNode:
+			return e.Set(n.Left.(*VariableNode).Name, val)
+		case *AttributeNode:
+			// TODO
+			return nil, nil
+		default:
+			panic("unexpected node type in reassignment operator")
+		}
+	}
+	return val, nil
 }
 
 // -------------------------------------------------------------------------------------------------

@@ -318,6 +318,14 @@ func parseBlock(buf *Buffer) (execute.Block, error) {
 }
 
 func parseBinaryOperation(buf *Buffer, op operators.BinaryOperator, left execute.Expression) (execute.Expression, error) {
+	if op.IsReassignmentOperator() {
+		// Ensure that the left operand is assignable if the operator is a reassignment operator.
+		_, isVar := left.(*VariableNode)
+		_, isAttr := left.(*AttributeNode)
+		if !isVar && !isAttr {
+			return nil, errors.NewSyntaxError(buf, "cannot reassign literal value", "")
+		}
+	}
 	var right execute.Expression
 	var err error
 	c := buf.Pop()

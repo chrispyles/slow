@@ -14,6 +14,10 @@ func (v *null) CloneIfPrimitive() execute.Value {
 	return Null
 }
 
+func (v *null) CompareTo(o execute.Value) (int, bool) {
+	return 0, false
+}
+
 func (v *null) Equals(o execute.Value) bool {
 	return o == Null
 }

@@ -31,6 +31,10 @@ func (v *Generator) CloneIfPrimitive() execute.Value {
 	return v
 }
 
+func (v *Generator) CompareTo(o execute.Value) (int, bool) {
+	return 0, false
+}
+
 func (v *Generator) Equals(o execute.Value) bool {
 	og, ok := o.(*Generator)
 	return ok && v == og

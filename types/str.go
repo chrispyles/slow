@@ -20,6 +20,19 @@ func (v *Str) CloneIfPrimitive() execute.Value {
 	return NewStr(v.value)
 }
 
+func (v *Str) CompareTo(o execute.Value) (int, bool) {
+	if o.Type() == StrType {
+		os := must(o.ToStr())
+		if v.value == os {
+			return 0, true
+		} else if v.value < os {
+			return -1, true
+		}
+		return 1, true
+	}
+	return 0, false
+}
+
 func (v *Str) Equals(o execute.Value) bool {
 	of, ok := o.(*Str)
 	if !ok {

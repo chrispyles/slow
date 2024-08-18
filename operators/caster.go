@@ -3,26 +3,26 @@ package operators
 import "github.com/chrispyles/slow/execute"
 import "github.com/chrispyles/slow/types"
 
-type TypeCaster struct {
+type typeCaster struct {
 	dest      execute.Type
 	castLeft  bool
 	castRight bool
 }
 
-func NewTypeCaster(leftType execute.Type, rightType execute.Type) (*TypeCaster, bool) {
+func newTypeCaster(leftType execute.Type, rightType execute.Type) (*typeCaster, bool) {
 	dest, ok := types.CommonNumericType(leftType, rightType)
 	if !ok {
 		return nil, false
 	}
 	// TODO: validate that this WAI
-	return &TypeCaster{dest, dest != leftType, dest != rightType}, true
+	return &typeCaster{dest, dest != leftType, dest != rightType}, true
 }
 
-func newFloatCaster() (*TypeCaster, bool) {
-	return &TypeCaster{types.FloatType, true, true}, true
+func newFloatCaster() (*typeCaster, bool) {
+	return &typeCaster{types.FloatType, true, true}, true
 }
 
-func (c *TypeCaster) singleCast(val execute.Value) (execute.Value, error) {
+func (c *typeCaster) singleCast(val execute.Value) (execute.Value, error) {
 	var res execute.Value
 	var err error
 	switch c.dest {
@@ -42,7 +42,7 @@ func (c *TypeCaster) singleCast(val execute.Value) (execute.Value, error) {
 	return res, err
 }
 
-func (c *TypeCaster) Cast(l, r execute.Value) (execute.Value, execute.Value, error) {
+func (c *typeCaster) Cast(l, r execute.Value) (execute.Value, execute.Value, error) {
 	var lc execute.Value
 	var rc execute.Value
 	var err error
@@ -62,6 +62,6 @@ func (c *TypeCaster) Cast(l, r execute.Value) (execute.Value, execute.Value, err
 	return lc, rc, err
 }
 
-func (c *TypeCaster) Dest() execute.Type {
+func (c *typeCaster) Dest() execute.Type {
 	return c.dest
 }

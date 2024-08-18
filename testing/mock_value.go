@@ -47,6 +47,10 @@ func (m *MockValue) CloneIfPrimitive() execute.Value {
 	return m
 }
 
+func (m *MockValue) CompareTo(execute.Value) (int, bool) {
+	return 0, false
+}
+
 func (m *MockValue) Equals(execute.Value) bool {
 	return m.EqualsRet
 }
