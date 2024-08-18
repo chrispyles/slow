@@ -6,34 +6,7 @@ import (
 	"github.com/chrispyles/slow/types"
 )
 
-type UnaryOperator string
-
-const (
-	UnOp_EMPTY UnaryOperator = ""
-	UnOp_POS   UnaryOperator = "+"
-	UnOp_NEG   UnaryOperator = "-"
-	UnOp_NOT   UnaryOperator = "!"
-	UnOp_INCR  UnaryOperator = "++"
-	UnOp_DECR  UnaryOperator = "--"
-)
-
-var allUnOps = map[UnaryOperator]bool{
-	UnOp_POS:  true,
-	UnOp_NEG:  true,
-	UnOp_NOT:  true,
-	UnOp_INCR: true,
-	UnOp_DECR: true,
-}
-
-func ToUnaryOp(maybeOp string) (UnaryOperator, bool) {
-	op := UnaryOperator(maybeOp)
-	if allUnOps[op] {
-		return op, true
-	}
-	return UnOp_EMPTY, false
-}
-
-func (o UnaryOperator) Value(v execute.Value) (execute.Value, error) {
+func (o *UnaryOperator) Value(v execute.Value) (execute.Value, error) {
 	switch o {
 	case UnOp_POS:
 		if v.Type() != types.FloatType &&
@@ -62,6 +35,6 @@ func (o UnaryOperator) Value(v execute.Value) (execute.Value, error) {
 	return nil, nil
 }
 
-func (o UnaryOperator) String() string {
-	return string(o)
+func (o *UnaryOperator) String() string {
+	return o.chars
 }

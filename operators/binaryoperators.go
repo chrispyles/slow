@@ -8,63 +8,7 @@ import (
 	"github.com/chrispyles/slow/types"
 )
 
-type BinaryOperator string
-
-// TODO: and, or, xor
-const (
-	BinOp_EMPTY BinaryOperator = ""
-
-	// arithmetic operators
-	BinOp_PLUS  BinaryOperator = "+"
-	BinOp_MINUS BinaryOperator = "-"
-	BinOp_TIMES BinaryOperator = "*"
-	BinOp_DIV   BinaryOperator = "/"
-	BinOp_MOD   BinaryOperator = "%"
-	BinOp_FDIV  BinaryOperator = "//"
-	BinOp_EXP   BinaryOperator = "**"
-
-	// reassignment operators
-	BinOp_RPLUS  BinaryOperator = "+="
-	BinOp_RMINUS BinaryOperator = "-="
-	BinOp_RTIMES BinaryOperator = "*="
-	BinOp_RDIV   BinaryOperator = "/="
-	BinOp_RMOD   BinaryOperator = "%="
-	BinOp_RFDIV  BinaryOperator = "//="
-	BinOp_REXP   BinaryOperator = "**="
-
-	// comparison operators
-	BinOp_EQ  BinaryOperator = "=="
-	BinOp_NEQ BinaryOperator = "!="
-	BinOp_LT  BinaryOperator = "<"
-	BinOp_LEQ BinaryOperator = "<="
-	BinOp_GT  BinaryOperator = ">"
-	BinOp_GEQ BinaryOperator = ">="
-)
-
-var allBinOps = map[BinaryOperator]bool{
-	BinOp_PLUS:   true,
-	BinOp_MINUS:  true,
-	BinOp_TIMES:  true,
-	BinOp_DIV:    true,
-	BinOp_MOD:    true,
-	BinOp_FDIV:   true,
-	BinOp_EXP:    true,
-	BinOp_RPLUS:  true,
-	BinOp_RMINUS: true,
-	BinOp_RTIMES: true,
-	BinOp_RDIV:   true,
-	BinOp_RMOD:   true,
-	BinOp_RFDIV:  true,
-	BinOp_REXP:   true,
-	BinOp_EQ:     true,
-	BinOp_NEQ:    true,
-	BinOp_LT:     true,
-	BinOp_LEQ:    true,
-	BinOp_GT:     true,
-	BinOp_GEQ:    true,
-}
-
-var reassignmentToArithmeticOperator = map[BinaryOperator]BinaryOperator{
+var reassignmentToArithmeticOperator = map[*BinaryOperator]*BinaryOperator{
 	BinOp_RPLUS:  BinOp_PLUS,
 	BinOp_RMINUS: BinOp_MINUS,
 	BinOp_RTIMES: BinOp_TIMES,
@@ -82,15 +26,7 @@ var incomparableTypes = map[execute.Type]bool{
 	types.NullType:      true,
 }
 
-func ToBinaryOp(maybeOp string) (BinaryOperator, bool) {
-	op := BinaryOperator(maybeOp)
-	if allBinOps[op] {
-		return op, true
-	}
-	return BinOp_EMPTY, false
-}
-
-func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
+func (o *BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 	// If this is a reassignment operator, convert it to its arithmetic version to calculate the new
 	// value.
 	if ao, ok := reassignmentToArithmeticOperator[o]; ok {
@@ -252,7 +188,7 @@ func (o BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 	return nil, errors.IncompatibleTypes(lt, rt, o.String())
 }
 
-func (o BinaryOperator) IsComparison() bool {
+func (o *BinaryOperator) IsComparison() bool {
 	return o == BinOp_EQ ||
 		o == BinOp_NEQ ||
 		o == BinOp_LT ||
@@ -261,16 +197,16 @@ func (o BinaryOperator) IsComparison() bool {
 		o == BinOp_GEQ
 }
 
-func (o BinaryOperator) IsReassignmentOperator() bool {
+func (o *BinaryOperator) IsReassignmentOperator() bool {
 	_, ok := reassignmentToArithmeticOperator[o]
 	return ok
 }
 
-func (o BinaryOperator) String() string {
-	return string(o)
+func (o *BinaryOperator) String() string {
+	return o.chars
 }
 
-var operatorPrecedence = map[BinaryOperator]int{
+var operatorPrecedence = map[*BinaryOperator]int{
 	BinOp_EXP:   -2,
 	BinOp_TIMES: -1,
 	BinOp_DIV:   -1,
@@ -288,7 +224,13 @@ var operatorPrecedence = map[BinaryOperator]int{
 
 // Compare returns true if this BinaryOperator takes precendence over other (i.e. this operation
 // should be evaluated first).
-func (o BinaryOperator) Compare(other BinaryOperator) bool {
+func (o *BinaryOperator) Compare(other *BinaryOperator) bool {
+	if ao, ok := reassignmentToArithmeticOperator[o]; ok {
+		o = ao
+	}
+	if ao, ok := reassignmentToArithmeticOperator[other]; ok {
+		other = ao
+	}
 	l, r := operatorPrecedence[o], operatorPrecedence[other]
 	return l < r
 }

@@ -42,7 +42,7 @@ func (n *AttributeNode) Execute(e *execute.Environment) (execute.Value, error) {
 // Binary operator node
 
 type BinaryOpNode struct {
-	Op    operators.BinaryOperator
+	Op    *operators.BinaryOperator
 	Left  execute.Expression
 	Right execute.Expression
 }
@@ -312,7 +312,7 @@ func (n *SwitchNode) Execute(e *execute.Environment) (execute.Value, error) {
 // Unary operator node
 
 type UnaryOpNode struct {
-	Op   operators.UnaryOperator
+	Op   *operators.UnaryOperator
 	Expr execute.Expression
 }
 

@@ -317,7 +317,7 @@ func parseBlock(buf *Buffer) (execute.Block, error) {
 	return b, nil
 }
 
-func parseBinaryOperation(buf *Buffer, op operators.BinaryOperator, left execute.Expression) (execute.Expression, error) {
+func parseBinaryOperation(buf *Buffer, op *operators.BinaryOperator, left execute.Expression) (execute.Expression, error) {
 	if op.IsReassignmentOperator() {
 		// Ensure that the left operand is assignable if the operator is a reassignment operator.
 		_, isVar := left.(*VariableNode)
@@ -366,7 +366,7 @@ func parseBinaryOperation(buf *Buffer, op operators.BinaryOperator, left execute
 }
 
 // addNewBinOp adds a new operation to the provided tree of binary operations.
-func addNewBinOp(n *BinaryOpNode, op operators.BinaryOperator, val execute.Expression) *BinaryOpNode {
+func addNewBinOp(n *BinaryOpNode, op *operators.BinaryOperator, val execute.Expression) *BinaryOpNode {
 	if n.Op.Compare(op) {
 		// The existing BinaryOpNode has a higher precedence than op, so put it lower in the AST.
 		return &BinaryOpNode{Op: op, Left: n, Right: val}
@@ -499,7 +499,7 @@ func parseSwitch(buf *Buffer) (execute.Expression, error) {
 	return nil, nil
 }
 
-func parseUnaryOperation(buf *Buffer, op operators.UnaryOperator) (execute.Expression, error) {
+func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expression, error) {
 	var expr execute.Expression
 	var err error
 	c := buf.Pop()
