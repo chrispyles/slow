@@ -144,7 +144,8 @@ func nextCandidateToken(line string, k int) (string, int) {
 }
 
 // readUntilStringClose reads through the provided line starting at index k and returns the index of
-// the next unescaped string delimiter.
+// the next unescaped string delimiter. If the string is unclosed, returns the index of the last
+// character in the line.
 func readUntilStringClose(line string, k int) int {
 	isEscaped := false
 	for i := k; i < len(line); i++ {
@@ -154,8 +155,7 @@ func readUntilStringClose(line string, k int) int {
 		}
 		isEscaped = !isEscaped && c == "\\"
 	}
-	// TODO: check that this doesn't let unclosed strings through
-	return len(line)
+	return len(line) - 1
 }
 
 func tokenizeLine(line string) (res tokenizedLine) {

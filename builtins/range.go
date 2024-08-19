@@ -1,6 +1,9 @@
 package builtins
 
 import (
+	"fmt"
+
+	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/types"
 )
@@ -25,19 +28,18 @@ type rangeGenerator struct {
 }
 
 func newRangeGenerator(start, stop, step execute.Value) (*rangeGenerator, error) {
-	if !start.Type().IsNumeric() || !stop.Type().IsNumeric() || !step.Type().IsNumeric() {
-		// TODO: error or panic
-		return nil, nil
+	for _, v := range []execute.Value{start, stop, step} {
+		if !v.Type().IsNumeric() {
+			return nil, errors.TypeErrorFromMessage(fmt.Sprintf("range cannot be called with non-numeric values: %q", v.Type()))
+		}
 	}
 	commonType, ok := types.CommonNumericType(start.Type(), stop.Type())
 	if !ok {
-		// TODO: error
-		return nil, nil
+		panic("types.CommonNumericType() returned no common type in newRangeGenerator()")
 	}
 	commonType, ok = types.CommonNumericType(commonType, step.Type())
 	if !ok {
-		// TODO: error
-		return nil, nil
+		panic("types.CommonNumericType() returned no common type in newRangeGenerator()")
 	}
 	switch commonType {
 	case types.FloatType:

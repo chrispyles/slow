@@ -7,6 +7,16 @@ import (
 	"github.com/chrispyles/slow/errors"
 )
 
+// TODO: this algo doesn't support conditionals correctly
+// if foo {
+//
+// } <-- after this line, the reader won't allow more input
+// else {
+//
+// }
+//
+// maybe require two newlines in a row to end reading if this is a multiline statement?
+
 func Read(rdr *bufio.Reader) (string, error) {
 	var s string
 	start := true

@@ -40,9 +40,8 @@ func (v *Generator) Equals(o execute.Value) bool {
 	return ok && v == og
 }
 
-func (v *Generator) GetAttribute(string) (execute.Value, error) {
-	// TODO
-	return nil, nil
+func (v *Generator) GetAttribute(a string) (execute.Value, error) {
+	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
 func (v *Generator) Length() (uint64, error) {

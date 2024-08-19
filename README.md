@@ -135,7 +135,13 @@ The `==` and `!=` support all types. (Note that all non-primitive types, like [l
 
 #### Ternary Operator
 
-<!-- TODO -->
+Slow supports a ternary operator of the form `<condition> ? <value if true> : <value if false>`. Only one branch of the operator is ever evaluated.
+
+```
+# In the example below, if i is even, only f is called, otherwise
+# only g is called.
+var x = i % 2 == 0 ? f() : g()
+```
 
 ### Lists
 
@@ -153,11 +159,13 @@ l = [1, 2, 3]
 
 #### List Methods
 
+The `list` type has several built-in methods, each of which is described below.
+
 <!-- TODO: more methods -->
 
-#### `append`
+#### `list.append`
 
-The `append` method of a list adds an element to the end of that list in-place.
+The `append` method of `list` adds an element to the end of that `list` in-place.
 
 ```
 _> var l = [1, 2]
@@ -167,13 +175,70 @@ _> print(l)
 #> [1, 2, 3]
 ```
 
-#### `equals`
+#### `list.equals`
 
-<!-- TODO -->
+The `equals` method of `list` compares it against another value. If the other value is also a list and each element of the two lists are equal (either by the `==` operator or `list.equals` if the corresponding elements are both themselves `list`s).
+
+```
+_> var l1 = [1, 2, 3]
+#> [1, 2, 3]
+_> l1.equals(1)
+#> false
+_> l1.equals([1, 2])
+#> false
+_> l1.equals([1, 2, 3])
+#> true
+_> [[1, 2], [2, 3]].equals([[1, 2], [2, 3]])
+#> true
+```
+
+### Conditionals
+
+Slow supports `if` statements to conditionally execute code blocks. To run a block should the condition evaluate to `false`, use an `else` statement.
+
+```
+if x % 3 == 0 {
+  print("x is a multiple of 3")
+}
+else if x % 3  == 1 {
+  print("x mod 3 is 1")
+}
+else {
+  print("x mod 3 is 2")
+}
+```
+
+Because every statement in Slow evaluates to a value, the return value of the last statement in an `if`/`else if`/`else` block's body is the value of the statement.
+
+```
+_> var x = 1
+#> 1
+_> if x % 2 == 0 {
+..   "even"
+.. }
+.. else {
+..   "odd"
+.. }
+..
+#> "odd"
+```
+
+Slow also supports `switch` statements, which match a value to a series of possible `case`s using the `==` operator. Unlike many other languages, Slow's `switch` cases **do not** fall through by default; the `fallthrough` keyword must be used to trigger fall through. Slow also uses curly braces to wrap `case` bodies.
+
+```
+switch x % 3 {
+  case 0 {
+    print("x is a multiple of 3")
+  }
+  case 1 { fallthrough }
+  case 2 {
+    print("x is not a multiple of 3")
+  }
+}
+```
 
 ### Control Flow
 
-<!-- for, while, switch -->
 Slow supports control flow with `for` and `while` loops.
 
 `for` loops iterate over a pre-defined set of values returned by an [iterator](#iterators). The `for` loop has the syntax `for <loop variable> in <iterator>` followed by a body enclosed in curly brackets.
@@ -182,6 +247,7 @@ Slow supports control flow with `for` and `while` loops.
 _> for i in range(5) {
 ..   print(i)
 .. }
+..
 #> 0
 #> 1
 #> 2
@@ -209,11 +275,7 @@ while true {
 
 #### Iterators
 
-<!-- TODO -->
-
-### Conditionals
-
-<!-- TODO: if, switch -->
+The iterator in a `for` loop is a built-in type in Slow. `list`s and `str`s come with iterators, and there is also a [generator type](#generators) that backs built-in functions like [`range`](#range).
 
 ### Functions
 
@@ -229,8 +291,6 @@ func isFactor(x, y) {
 
 ##### `exit`
 
-##### `help`
-
 ##### `len`
 
 ##### `print`
@@ -238,3 +298,17 @@ func isFactor(x, y) {
 ##### `range`
 
 ##### `type`
+
+## Planned Features
+
+### Generators
+
+### Maps
+
+### Classes
+
+### Format Strings
+
+### Imports
+
+### Error Handling

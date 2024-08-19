@@ -79,16 +79,15 @@ func (v *Func) Equals(o execute.Value) bool {
 	return v == oc
 }
 
+func (v *Func) GetAttribute(a string) (execute.Value, error) {
+	return nil, errors.NewAttributeError(v.Type(), a)
+}
+
 func (v *Func) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
 }
-
 func (v *Func) String() string {
 	return fmt.Sprintf("<function %s>", v.name)
-}
-
-func (v *Func) GetAttribute(a string) (execute.Value, error) {
-	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
 func (v *Func) ToBool() bool {

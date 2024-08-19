@@ -14,8 +14,7 @@ func NewEnvironment() *Environment {
 
 func (e *Environment) Declare(n string) error {
 	if e.frozen {
-		// TODO: should this return an error instead of panicking?
-		panic("can't bind create or set variables in a frozen environment")
+		panic("can't declare or set variables in a frozen environment")
 	}
 	if _, ok := e.values[n]; ok {
 		return errors.NewDeclarationError(n)
@@ -43,8 +42,7 @@ func (e *Environment) NewFrame() *Environment {
 
 func (e *Environment) Set(n string, v Value) (Value, error) {
 	if e.frozen {
-		// TODO: should this return an error instead of panicking?
-		panic("can't bind create or set variables in a frozen environment")
+		panic("can't declare or set variables in a frozen environment")
 	}
 	if _, ok := e.values[n]; ok {
 		e.values[n] = v

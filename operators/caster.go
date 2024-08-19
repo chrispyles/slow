@@ -14,7 +14,6 @@ func newTypeCaster(leftType execute.Type, rightType execute.Type) (*typeCaster, 
 	if !ok {
 		return nil, false
 	}
-	// TODO: validate that this WAI
 	return &typeCaster{dest, dest != leftType, dest != rightType}, true
 }
 
@@ -26,6 +25,8 @@ func (c *typeCaster) singleCast(val execute.Value) (execute.Value, error) {
 	var res execute.Value
 	var err error
 	switch c.dest {
+	case types.BoolType:
+		res = types.NewBool(val.ToBool())
 	case types.FloatType:
 		var v float64
 		v, err = val.ToFloat()

@@ -54,16 +54,41 @@ var (
 
 var keywords map[string]parser
 
-// reservedKeywords is a set of keywords that cannot be used as symbols but which do not have a
-// dedicated parser.
+// reservedKeywords is a set of keywords that cannot be used as symbols.
 var reservedKeywords = map[string]bool{
-	kw_ELSE:    true,
-	kw_CASE:    true,
-	kw_DEFAULT: true,
-	kw_IN:      true,
-	kw_TRUE:    true,
-	kw_FALSE:   true,
-	kw_NULL:    true,
+	kw_IF:          true,
+	kw_ELSE:        true,
+	kw_SWITCH:      true,
+	kw_CASE:        true,
+	kw_DEFAULT:     true,
+	kw_FALLTHROUGH: true,
+
+	// iteration
+	kw_FOR:      true,
+	kw_IN:       true,
+	kw_WHILE:    true,
+	kw_BREAK:    true,
+	kw_CONTINUE: true,
+
+	// functions
+	kw_FUNC:   true,
+	kw_RETURN: true,
+
+	// declarations
+	kw_VAR: true,
+
+	// values
+	kw_TRUE:  true,
+	kw_FALSE: true,
+	kw_NULL:  true,
+
+	// types (whose names don't correspond to another keyword)
+	"bool":  true,
+	"float": true,
+	"int":   true,
+	"list":  true,
+	"str":   true,
+	"uint":  true,
 }
 
 func parse(s string) (execute.Block, error) {
@@ -257,7 +282,7 @@ func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, er
 	}
 	if tkn[0] == stringDelim {
 		if tkn[len(tkn)-1] != stringDelim {
-			return nil, errors.NewSyntaxError(buf, "unclosed string", string(stringDelim))
+			return nil, errors.NewSyntaxError(buf, "unclosed string", "")
 		}
 		return &ConstantNode{Value: types.NewStr(tkn[1 : len(tkn)-1])}, nil
 	}

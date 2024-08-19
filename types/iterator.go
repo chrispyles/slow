@@ -20,5 +20,3 @@ func (v *Iterator) Next() (execute.Value, error) {
 	v.idx++
 	return v.values[idx], nil
 }
-
-// TODO: generator type (for `range`)

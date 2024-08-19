@@ -70,8 +70,7 @@ func (v *Str) ToInt() (int64, error) {
 }
 
 func (v *Str) ToIterator() (execute.Iterator, error) {
-	// TODO: string iterator
-	return nil, errors.NewTypeError(v.Type(), IteratorType)
+	return &stringIterator{s: v}, nil
 }
 
 func (v *Str) ToStr() (string, error) {
@@ -84,4 +83,19 @@ func (v *Str) ToUint() (uint64, error) {
 
 func (v *Str) Type() execute.Type {
 	return StrType
+}
+
+type stringIterator struct {
+	idx int
+	s   *Str
+}
+
+func (si *stringIterator) HasNext() bool {
+	return si.idx < len(si.s.value)
+}
+
+func (si *stringIterator) Next() (execute.Value, error) {
+	c := string(si.s.value[si.idx])
+	si.idx++
+	return NewStr(c), nil
 }
