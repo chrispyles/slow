@@ -30,9 +30,16 @@ func (o *UnaryOperator) Value(v execute.Value) (execute.Value, error) {
 	case UnOp_NOT:
 		// Each type's ToBool method determines the value's truthiness.
 		return types.NewBool(!v.ToBool()), nil
+	case UnOp_INCR:
+		return BinOp_PLUS.Value(v, types.NewUint(1))
+	case UnOp_DECR:
+		return BinOp_MINUS.Value(v, types.NewUint(1))
 	}
-	// TODO: other operators
-	return nil, nil
+	panic("unandled unary operator in UnaryOperator.Value()")
+}
+
+func (o *UnaryOperator) IsReassignmentOperator() bool {
+	return o == UnOp_INCR || o == UnOp_DECR
 }
 
 func (o *UnaryOperator) String() string {

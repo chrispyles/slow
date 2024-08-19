@@ -102,7 +102,7 @@ Variables are scoped to the frame they're declared in. Setting a variable in a c
 _> var x = 1
 #> 1
 _> func f() {
-..   x++
+..   ++x
 .. }
 ..
 _> f()
@@ -185,6 +185,19 @@ The `==` and `!=` support all types. (Note that all non-primitive types, like [l
 #### Unary Operators
 
 <!-- TODO -->
+
+The unary reassignment operators (`++` and `--`) return the value of the variable **before** the operation but set the value of the variable/field to the value after applying the operation.
+
+```
+_> var x = 1
+#> 1
+_> ++x
+#> 1
+_> x
+#> 2
+```
+
+Note that all unary operators must precede their operand; that is `++x` is valid, but `x++` is not.
 
 #### Ternary Conditional Operator
 
@@ -336,7 +349,7 @@ _> for i in range(5) {
 var x = 10
 while x > 0 {
   print(x)
-  x--
+  --x
 }
 ```
 
@@ -362,7 +375,7 @@ Loops can be broken early using the `break` keyword.
 ```
 var x = 0
 while true {
-  x++
+  ++x
   if x > 100 { break }
 }
 ```

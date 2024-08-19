@@ -317,11 +317,32 @@ type UnaryOpNode struct {
 }
 
 func (n *UnaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
-	val, err := n.Expr.Execute(e)
+	operand, err := n.Expr.Execute(e)
 	if err != nil {
 		return nil, err
 	}
-	return n.Op.Value(val)
+	val, err := n.Op.Value(operand)
+	if err != nil {
+		return nil, err
+	}
+	if n.Op.IsReassignmentOperator() {
+		// Reassignment operators return the value of the operand BEFORE the operation, but update its
+		// value in the environment/object.
+		switch n.Expr.(type) {
+		case *VariableNode:
+			_, err := e.Set(n.Expr.(*VariableNode).Name, val)
+			if err != nil {
+				return nil, err
+			}
+			return operand, nil
+		case *AttributeNode:
+			// TODO
+			return nil, nil
+		default:
+			panic("unexpected node type in reassignment operator")
+		}
+	}
+	return val, nil
 }
 
 // -------------------------------------------------------------------------------------------------

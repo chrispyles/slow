@@ -505,7 +505,7 @@ func parseIf(buf *Buffer) (execute.Expression, error) {
 			}
 			elseBody = execute.Block{elseIfBody}
 		} else {
-			return nil, errors.NewSyntaxError(buf, "unexpected symbol", buf.Current())
+			return nil, errors.UnexpectedSymbolError(buf, buf.Current(), "")
 		}
 		node.ElseBody = elseBody
 	}
@@ -540,6 +540,14 @@ func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expr
 	}
 	if err != nil {
 		return nil, err
+	}
+	if op.IsReassignmentOperator() {
+		// Ensure that the left operand is assignable if the operator is a reassignment operator.
+		_, isVar := expr.(*VariableNode)
+		_, isAttr := expr.(*AttributeNode)
+		if !isVar && !isAttr {
+			return nil, errors.NewSyntaxError(buf, "cannot reassign literal value", "")
+		}
 	}
 	return &UnaryOpNode{Op: op, Expr: expr}, nil
 }
