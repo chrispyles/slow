@@ -114,5 +114,4 @@ func TestNewRootEnvironmentIsFrozen(t *testing.T) {
 		}
 	}()
 	env.Set("foo", &slowtesting.MockValue{})
-
 }

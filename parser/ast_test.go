@@ -10,6 +10,8 @@ import (
 )
 
 var allowTypesUnexported = cmp.AllowUnexported(
+	operators.BinaryOperator{},
+	operators.UnaryOperator{},
 	types.Bool{},
 	types.Float{},
 	types.Func{},
@@ -20,6 +22,7 @@ var allowTypesUnexported = cmp.AllowUnexported(
 	types.Uint{},
 )
 
+// TODO: these tests also test the operator logic; is this OK?
 func TestArithmetic(t *testing.T) {
 	tests := []struct {
 		code string
@@ -119,8 +122,9 @@ func TestCreateAST(t *testing.T) {
 	var l = [x]
 	while x != 1 {
 		if x % 2 == 0 {
-			x = x / 2 # TODO: x /= 2
-		} else {
+			x //= 2
+		}
+		else {
 			x = 3 * x + 1
 		}
 		l.append(x)
@@ -177,16 +181,13 @@ for x in range(1, 20) {
 									},
 								},
 								Body: execute.Block{
-									&AssignmentNode{
-										Left: "x",
-										Right: &BinaryOpNode{
-											Op: operators.BinOp_DIV,
-											Left: &VariableNode{
-												Name: "x",
-											},
-											Right: &ConstantNode{
-												Value: types.NewInt(2),
-											},
+									&BinaryOpNode{
+										Op: operators.BinOp_RFDIV,
+										Left: &VariableNode{
+											Name: "x",
+										},
+										Right: &ConstantNode{
+											Value: types.NewInt(2),
 										},
 									},
 								},
