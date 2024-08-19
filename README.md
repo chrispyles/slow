@@ -28,14 +28,6 @@ To launch the Slow interpreter, run `slow -i`. Like the Python CLI, you can run 
 $ slow -i main.slo
 ```
 
-## Installation
-
-<!-- TODO -->
-
-## Usage
-
-<!-- TODO -->
-
 ## Reference
 
 This section contains a comprehensive reference of the entire Slow programming language.
