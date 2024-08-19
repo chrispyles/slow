@@ -1,6 +1,32 @@
 # The Slow Programming Language
 
-<!-- TODO -->
+The Slow programming language is an dynamically-typed interpreted programming language implemented in Go.
+
+## Installation
+
+Currently, the only way to run the Slow interpreter is to build it from source. This can be done by cloning this repository and using the `go` CLI to build it.
+
+```console
+$ git clone https://github.com/chrispyles/slow
+$ cd slow
+$ go install .
+```
+
+This will add the `slow` binary to your Go `bin` directory, so make sure it is in your `$PATH`.
+
+## Usage
+
+The `slow` interpreter has two modes: script execution and live interpretation. To run a Slow script (idiomatically a `.slo` file), pass the path to the file to the `slow` command:
+
+```console
+$ slow main.slo
+```
+
+To launch the Slow interpreter, run `slow -i`. Like the Python CLI, you can run a file and then start an interpreter with that file's environment using the `-i` flag with the script path:
+
+```console
+$ slow -i main.slo
+```
 
 ## Installation
 
@@ -12,7 +38,7 @@
 
 ## Reference
 
-<!-- TODO: intro paragraph -->
+This section contains a comprehensive reference of the entire Slow programming language.
 
 Some (not all) of the examples below use the interpreter format. In this format, statements are prefixed with `_>`, the interpreter prompt, and outputs are prefixed with `#>`. If a statement takes up multiple lines, all lines after the first will be prefixed with `..`. This format mimicks the Slow interpreter.
 
@@ -37,11 +63,11 @@ Slow has the following primitive data types:
 - `bool`: `true` or `false`
 - `float`: `1.`, `2.1`, `3.14`, `.02` etc.
 - `int`: `1`, `2`, `-1`, etc.
-- `null`
-- `str`: `"The quick brown fox jumps over the lazy dog."`
 - `uint`: `0u`, `1u`, `2u`, etc.
+- `str`: `"The quick brown fox jumps over the lazy dog."`
+- `null`
 
-All numeric data types (except `bool`) are 64 bits.
+All numeric data types (except `bool`) are 64 bits (backed by Go's 64-bit number types).
 
 All values are truthy except `false`, `0` (in all numeric types), `""`, and `null`.
 
@@ -403,3 +429,5 @@ func isFactor(x, y) {
 ### Imports
 
 ### Error Handling
+
+### Type Casting
