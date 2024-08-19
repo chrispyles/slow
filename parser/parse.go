@@ -168,9 +168,9 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		return nil, err
 	}
 	c := buf.Pop()
-	if c == "," || c == ")" || c == "]" {
-		// we are inside a function call or list literal, so put move the token back one so that the
-		// calling frame can consume it
+	if c == "," || c == ")" || c == "]" || c == "}" {
+		// we are inside a function call, list literal, or block, so put move the token back one so that
+		// the calling frame can consume it
 		buf.MoveBack()
 		return val, nil
 	}
@@ -318,7 +318,7 @@ func validateSymbol(buf errors.Buffer, tkn string) error {
 
 func parseBlock(buf *Buffer) (execute.Block, error) {
 	// N.B. the first token in the buffer should be the opening "{"
-	// maybe support single-statement blocks?
+	// TODO: maybe support single-statement blocks?
 	if c := buf.Pop(); c != "{" {
 		return nil, errors.UnexpectedSymbolError(buf, c, "{")
 	}
