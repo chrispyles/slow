@@ -15,7 +15,7 @@ func Read(rdr *bufio.Reader) (string, error) {
 	var isMultiline bool
 	for {
 		if start {
-			fmt.Print("_> ")
+			fmt.Print("-> ")
 			start = false
 		} else {
 			fmt.Print(".. ")

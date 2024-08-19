@@ -5,6 +5,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/chrispyles/slow/config"
 	"github.com/chrispyles/slow/errors"
@@ -89,6 +90,16 @@ var reservedKeywords = map[string]bool{
 	"list":  true,
 	"str":   true,
 	"uint":  true,
+}
+
+// stringEscapeSequences maps raw escape sequences that can be used in string literals to the
+// character they should be replaced with.
+var stringEscapeSequences = map[string]string{
+	`\\`: "\\",
+	`\n`: "\n",
+	`\r`: "\r",
+	`\t`: "\t",
+	`\"`: "\"",
 }
 
 func parse(s string) (execute.Block, error) {
@@ -246,7 +257,7 @@ func parseArgList(buf *Buffer, endToken string) ([]execute.Expression, error) {
 	return args, nil
 }
 
-func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, error) {
+func evaluateLiteralToken(tkn string, buf *Buffer) (execute.Expression, error) {
 	tknBytes := []byte(tkn)
 	if intRegex.Match(tknBytes) {
 		intValue, err := strconv.ParseInt(tkn, 10, 64)
@@ -281,10 +292,7 @@ func evaluateLiteralToken(tkn string, buf errors.Buffer) (execute.Expression, er
 		return &ConstantNode{Value: types.NewFloat(floatValue)}, nil
 	}
 	if tkn[0] == stringDelim {
-		if tkn[len(tkn)-1] != stringDelim {
-			return nil, errors.NewSyntaxError(buf, "unclosed string", "")
-		}
-		return &ConstantNode{Value: types.NewStr(tkn[1 : len(tkn)-1])}, nil
+		return parseString(buf, tkn)
 	}
 	if tkn == kw_TRUE {
 		return &ConstantNode{Value: types.NewBool(true)}, nil
@@ -518,6 +526,25 @@ func parseReturn(buf *Buffer) (execute.Expression, error) {
 		return nil, err
 	}
 	return &ReturnNode{Value: expr}, nil
+}
+
+func parseString(buf *Buffer, tkn string) (execute.Expression, error) {
+	if tkn[len(tkn)-1] != stringDelim {
+		return nil, errors.NewSyntaxError(buf, "unclosed string", "")
+	}
+	split := strings.Split(tkn, "")
+	var s string
+	for i := 1; i < len(split)-1; i++ {
+		// Check if this character + the next one form an escape sequence (which are 2 characters long).
+		// If so, add the corresponding value to the string and skip the (i+1)th character.
+		if unescaped, ok := stringEscapeSequences[tkn[i:i+2]]; ok {
+			s += unescaped
+			i++
+		} else {
+			s += string(tkn[i])
+		}
+	}
+	return &ConstantNode{Value: types.NewStr(s)}, nil
 }
 
 func parseSwitch(buf *Buffer) (execute.Expression, error) {

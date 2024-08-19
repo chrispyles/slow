@@ -3,7 +3,7 @@ package printer
 import "fmt"
 
 const (
-	prefix = "#> "
+	prefix = ""
 )
 
 func Print(s string) {

@@ -32,7 +32,7 @@ $ slow -i main.slo
 
 This section contains a comprehensive reference of the entire Slow programming language.
 
-Some (not all) of the examples below use the interpreter format. In this format, statements are prefixed with `_>`, the interpreter prompt, and outputs are prefixed with `#>`. If a statement takes up multiple lines, all lines after the first will be prefixed with `..`. This format mimicks the Slow interpreter.
+Some (not all) of the examples below use the interpreter format. In this format, statements are prefixed with `->`, the interpreter prompt. If a statement takes up multiple lines, all lines after the first will be prefixed with `..`. This format mimicks the Slow interpreter.
 
 ```
 # This is the non-interpreter format
@@ -41,11 +41,11 @@ print(x)
 ```
 
 ```
-_> # This is the interpreter format
-_> var x = 2
-#> 2
-_> print(x)
-#> 2
+-> # This is the interpreter format
+-> var x = 2
+2
+-> print(x)
+2
 ```
 
 ### Data Types
@@ -92,22 +92,22 @@ var x
 They can also be assigned in the same statement.
 
 ```
-_> var x = 1
-#> 1
+-> var x = 1
+1
 ```
 
 Variables are scoped to the frame they're declared in. Setting a variable in a child frame will update the value of the variable in the frame in which it was declared.
 
 ```
-_> var x = 1
-#> 1
-_> func f() {
+-> var x = 1
+1
+-> func f() {
 ..   ++x
 .. }
 ..
-_> f()
-_> x
-#> 2
+-> f()
+-> x
+2
 ```
 
 Fields or methods of values are accessed using dot notation:
@@ -147,14 +147,14 @@ Also note that the expotentiation operator, `**`, is backed by Go's [`math.Pow` 
 Each of the arithmetic operators has a reassignment variant that reassigns its left operand to the value of the expression; the syntax for these variants is the arithmetic operator suffixed with an `=` (`+=`, `-=`, `*=`, `/=`, `%=`, `//=`, `**=`).
 
 ```
-_> var x = 2
-#> 2
-_> x += 1
-#> 3
-_> x //= 2
-#> 1
-_> print(x)
-#> 1
+-> var x = 2
+2
+-> x += 1
+3
+-> x //= 2
+1
+-> print(x)
+1
 ```
 
 The left operand of a reassignment oeprators may only be an already-declared variable, an object field, or an [index](#list-indexing).
@@ -189,12 +189,12 @@ The `==` and `!=` support all types. (Note that all non-primitive types, like [l
 The unary reassignment operators (`++` and `--`) return the value of the variable **before** the operation but set the value of the variable/field to the value after applying the operation.
 
 ```
-_> var x = 1
-#> 1
-_> ++x
-#> 1
-_> x
-#> 2
+-> var x = 1
+1
+-> ++x
+1
+-> x
+2
 ```
 
 Note that all unary operators must precede their operand; that is `++x` is valid, but `x++` is not.
@@ -228,10 +228,10 @@ l = [1, 2, 3]
 Lists are zero-indexed. To retrieve the element of a list at a particular index, use square brackets:
 
 ```
-_> var l = [1, 2]
-#> [1, 2]
-_> l[1]
-#> 2
+-> var l = [1, 2]
+[1, 2]
+-> l[1]
+2
 ```
 
 #### List Methods
@@ -245,11 +245,11 @@ The `list` type has several built-in methods, each of which is described below.
 The `append` method of `list` adds an element to the end of that `list` in-place.
 
 ```
-_> var l = [1, 2]
-#> [1, 2]
-_> l.append(3)
-_> print(l)
-#> [1, 2, 3]
+-> var l = [1, 2]
+[1, 2]
+-> l.append(3)
+-> print(l)
+[1, 2, 3]
 ```
 
 #### `list.equals`
@@ -257,16 +257,16 @@ _> print(l)
 The `equals` method of `list` compares it against another value. If the other value is also a list and each element of the two lists are equal (either by the `==` operator or `list.equals` if the corresponding elements are both themselves `list`s).
 
 ```
-_> var l1 = [1, 2, 3]
-#> [1, 2, 3]
-_> l1.equals(1)
-#> false
-_> l1.equals([1, 2])
-#> false
-_> l1.equals([1, 2, 3])
-#> true
-_> [[1, 2], [2, 3]].equals([[1, 2], [2, 3]])
-#> true
+-> var l1 = [1, 2, 3]
+[1, 2, 3]
+-> l1.equals(1)
+false
+-> l1.equals([1, 2])
+false
+-> l1.equals([1, 2, 3])
+true
+-> [[1, 2], [2, 3]].equals([[1, 2], [2, 3]])
+true
 ```
 
 ### Conditionals
@@ -299,16 +299,16 @@ else {
 Because every statement in Slow evaluates to a value, the return value of the last statement in an `if`/`else if`/`else` block's body is the value of the statement.
 
 ```
-_> var x = 1
-#> 1
-_> if x % 2 == 0 {
+-> var x = 1
+1
+-> if x % 2 == 0 {
 ..   "even"
 .. }
 .. else {
 ..   "odd"
 .. }
 ..
-#> "odd"
+"odd"
 ```
 
 Slow also supports `switch` statements, which match a value to a series of possible `case`s using the logic of the `==` operator. Unlike many other languages, Slow's `switch` cases **do not** fall through by default; the `fallthrough` keyword must be used to trigger fall through. Slow uses curly brackets to wrap `case` bodies.
@@ -332,15 +332,15 @@ Slow supports control flow with `for` and `while` loops.
 `for` loops iterate over a pre-defined set of values returned by an [iterator](#iterators). The `for` loop has the syntax `for <loop variable> in <iterator>` followed by a body enclosed in curly brackets.
 
 ```
-_> for i in range(5) {
+-> for i in range(5) {
 ..   print(i)
 .. }
 ..
-#> 0
-#> 1
-#> 2
-#> 3
-#> 4
+0
+1
+2
+3
+4
 ```
 
 `while` loops iterate while a condition evaluates to a truthy value and have the syntax `while <condition>` followed by a body enclosed in curly brackets.
