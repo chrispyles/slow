@@ -3,23 +3,16 @@ package reader
 import (
 	"bufio"
 	"fmt"
+	"strings"
 
 	"github.com/chrispyles/slow/errors"
 )
 
-// TODO: this algo doesn't support conditionals correctly
-// if foo {
-//
-// } <-- after this line, the reader won't allow more input
-// else {
-//
-// }
-//
-// maybe require two newlines in a row to end reading if this is a multiline statement?
-
 func Read(rdr *bufio.Reader) (string, error) {
 	var s string
 	start := true
+	var complete bool
+	var isMultiline bool
 	for {
 		if start {
 			fmt.Print("_> ")
@@ -31,13 +24,27 @@ func Read(rdr *bufio.Reader) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		// If s is a complete statement and this is a blank line, stop reading and return the sttement.
+		// Otherwise, continue reading lines. This check means that two newlines are requireed to end
+		// a multiline statement, so that it's possible to enter things like "...}\nelse {..." without
+		// needing to open the second block on the same line that the first one is closed.
+		if complete {
+			if strings.Trim(line, " \t\n\r") == "" {
+				return s, nil
+			}
+			complete = false
+		}
 		s += line
-		complete, err := isCompleteStatement(s)
+		complete, err = isCompleteStatement(s)
 		if err != nil {
 			return "", err
 		}
-		if complete {
+		if !isMultiline && complete {
+			// If we have only read one line and it is a complete statement, return it.
 			return s, nil
+		} else if !isMultiline {
+			// This is the first line of a multiline statement.
+			isMultiline = true
 		}
 	}
 }
