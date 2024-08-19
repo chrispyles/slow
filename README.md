@@ -2,6 +2,14 @@
 
 <!-- TODO -->
 
+## Installation
+
+<!-- TODO -->
+
+## Usage
+
+<!-- TODO -->
+
 ## Reference
 
 <!-- TODO: intro paragraph -->
@@ -53,6 +61,7 @@ x = 0       # <- this is also a statement
 ```
 
 <!-- TODO: all statements evaluate to a value -->
+<!-- TODO: subexpressions wrapped in parens are evaluated first -->
 
 ### Variables
 
@@ -69,7 +78,29 @@ _> var x = 1
 #> 1
 ```
 
-Variables are scoped to the frame they're declared in. Setting a variable in a child frame that will update the value of the variable in the frame in which it was declared.
+Variables are scoped to the frame they're declared in. Setting a variable in a child frame will update the value of the variable in the frame in which it was declared.
+
+```
+_> var x = 1
+#> 1
+_> func f() {
+..   x++
+.. }
+..
+_> f()
+_> x
+#> 2
+```
+
+Fields or methods of values are accessed using dot notation:
+
+```
+# Get the "bar" attribute of the variable "foo"
+foo.bar
+
+# Call the "baz" method of the variable "foo"
+foo.baz()
+```
 
 ### Operators
 
@@ -93,7 +124,9 @@ When using arithmetic operators, the precedence of types is `float`, then `int`,
 - Modulus (`%`) always returns an `int`.
 - Floor division (`//`) always returns an `int`.
 
-Each of the arithmetic operators has a reassignment variant that reassigns its left operand to the value of the expression; the syntax for these variants is the arithmetic operator suffixed with an `=`.
+Also note that the expotentiation operator, `**`, is backed by Go's [`math.Pow` function](https://pkg.go.dev/math#Pow), meaning its operands are converted to `float64`s and the result is converted from `float64` to the correct result type.
+
+Each of the arithmetic operators has a reassignment variant that reassigns its left operand to the value of the expression; the syntax for these variants is the arithmetic operator suffixed with an `=` (`+=`, `-=`, `*=`, `/=`, `%=`, `//=`, `**=`).
 
 ```
 _> var x = 2
@@ -106,6 +139,8 @@ _> print(x)
 #> 1
 ```
 
+The left operand of a reassignment oeprators may only be an already-declared variable, an object field, or an [index](#list-indexing).
+
 Slow supports the following logical operators:
 
 | Operator | Description |
@@ -114,7 +149,7 @@ Slow supports the following logical operators:
 | `\|\|`   | logical or  |
 | `^^`     | logical xor |
 
-Both the `&&` and `||` operators short-circuit; that is, the second operand of `&&` and `||` are only evaluated if the first is falsely and truthy, respectively. `&&` and `||` also do not change the types of their operands (e.g. `1 && 2` returns `1`, not `true`), but `^^` always returns a `bool`. All logical operators also have a reassignment variant (`&&=`, `||=`, `^^=`).
+Both the `&&` and `||` operators short-circuit; that is, the second operand of `&&` and `||` are only evaluated if the first is falsey and truthy, respectively. `&&` and `||` also do not change the types of their operands (e.g. `1 && 2` returns `1`, not `true`), but `^^` always returns a `bool`. All logical operators also have a reassignment variant (`&&=`, `||=`, `^^=`).
 
 Slow supports the following comparison operators:
 
@@ -133,9 +168,9 @@ The `==` and `!=` support all types. (Note that all non-primitive types, like [l
 
 <!-- TODO -->
 
-#### Ternary Operator
+#### Ternary Conditional Operator
 
-Slow supports a ternary operator of the form `<condition> ? <value if true> : <value if false>`. Only one branch of the operator is ever evaluated.
+Slow supports a ternary conditional operator of the form `<condition> ? <value if true> : <value if false>`. Only one branch of the operator is ever evaluated.
 
 ```
 # In the example below, if i is even, only f is called, otherwise
@@ -145,16 +180,27 @@ var x = i % 2 == 0 ? f() : g()
 
 ### Lists
 
-Slow has a built-in `list` type backed by a Go slice. Lists are declared using square brackets
+Slow has a built-in `list` type backed by a Go slice. Lists literals are declared using square brackets
 
 ```
 var l = []
 ```
 
-You can also specify elements when declaring a list:
+You can also specify elements when writing a list literal:
 
 ```
 l = [1, 2, 3]
+```
+
+#### List Indexing
+
+Lists are zero-indexed. To retrieve the element of a list at a particular index, use square brackets:
+
+```
+_> var l = [1, 2]
+#> [1, 2]
+_> l[1]
+#> 2
 ```
 
 #### List Methods
@@ -194,7 +240,7 @@ _> [[1, 2], [2, 3]].equals([[1, 2], [2, 3]])
 
 ### Conditionals
 
-Slow supports `if` statements to conditionally execute code blocks. To run a block should the condition evaluate to `false`, use an `else` statement.
+Slow supports `if` statements to conditionally execute code blocks. To run a block should the condition be falsey, use an `else` statement.
 
 ```
 if x % 3 == 0 {
@@ -205,6 +251,17 @@ else if x % 3  == 1 {
 }
 else {
   print("x mod 3 is 2")
+}
+```
+
+Conditions do not need to evaluate to `bool`s; the truthiness of the condition's value will be used to determine whether to run the `if` body. 
+
+```
+if x % 2 {
+  print("x is odd")
+}
+else {
+  print("x is even")
 }
 ```
 
@@ -223,7 +280,7 @@ _> if x % 2 == 0 {
 #> "odd"
 ```
 
-Slow also supports `switch` statements, which match a value to a series of possible `case`s using the `==` operator. Unlike many other languages, Slow's `switch` cases **do not** fall through by default; the `fallthrough` keyword must be used to trigger fall through. Slow also uses curly braces to wrap `case` bodies.
+Slow also supports `switch` statements, which match a value to a series of possible `case`s using the logic of the `==` operator. Unlike many other languages, Slow's `switch` cases **do not** fall through by default; the `fallthrough` keyword must be used to trigger fall through. Slow uses curly brackets to wrap `case` bodies.
 
 ```
 switch x % 3 {
@@ -273,9 +330,41 @@ while true {
 }
 ```
 
+In either loop type, the rest of the current iteration can be skipped using the `continue` keyword.
+
+```
+for x in range(20) {
+  if x % 2 == 1 { continue }
+  print(x)
+}
+```
+
+Loops can be broken early using the `break` keyword.
+
+```
+var x = 0
+while true {
+  x++
+  if x > 100 { break }
+}
+```
+
 #### Iterators
 
 The iterator in a `for` loop is a built-in type in Slow. `list`s and `str`s come with iterators, and there is also a [generator type](#generators) that backs built-in functions like [`range`](#range).
+
+```
+# To iterate over each character in a string:
+var s = "foobar"
+for c in s {
+  print(c)
+}
+
+# To iterate over each element of a list:
+for e in [1, 2, 3] {
+  print(e)
+}
+```
 
 ### Functions
 
@@ -302,6 +391,8 @@ func isFactor(x, y) {
 ## Planned Features
 
 ### Generators
+
+### List Slicing
 
 ### Maps
 
