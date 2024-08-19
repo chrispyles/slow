@@ -169,6 +169,13 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 				return nil, err
 			}
 			return &ListNode{Values: values}, nil
+		} else if tkn == "{" {
+			// This is an inline map
+			values, err := parseMap(buf)
+			if err != nil {
+				return nil, err
+			}
+			return &MapNode{Values: values}, nil
 		} else {
 			val, err = evaluateLiteralToken(tkn, buf)
 		}
@@ -179,9 +186,9 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		return nil, err
 	}
 	c := buf.Pop()
-	if c == "," || c == ")" || c == "]" || c == "}" {
-		// we are inside a function call, list literal, or block, so put move the token back one so that
-		// the calling frame can consume it
+	if c == "," || c == ":" || c == ")" || c == "]" || c == "}" {
+		// we are inside a function call, list literal, map literal, or block, so put move the token
+		// back one so that the calling frame can consume it
 		buf.MoveBack()
 		return val, nil
 	}
@@ -518,6 +525,35 @@ func parseIf(buf *Buffer) (execute.Expression, error) {
 		node.ElseBody = elseBody
 	}
 	return node, nil
+}
+
+func parseMap(buf *Buffer) ([][]execute.Expression, error) {
+	next := buf.Current()
+	var kvs [][]execute.Expression
+	for next != "}" {
+		buf.ConsumeNewlines()
+		keyExpr, err := parseExpressionStart(buf)
+		if err != nil {
+			return nil, err
+		}
+		if c := buf.Pop(); c != ":" {
+			return nil, errors.UnexpectedSymbolError(buf, c, ":")
+		}
+		valExpr, err := parseExpressionStart(buf)
+		if err != nil {
+			return nil, err
+		}
+		kvs = append(kvs, []execute.Expression{keyExpr, valExpr})
+		next = buf.Current()
+		if next == "}" {
+			break
+		} else if next != "," {
+			return nil, errors.UnexpectedSymbolError(buf, next, ",")
+		}
+		buf.Pop() // remove "," from the buffer
+	}
+	buf.Pop() // remove closing "}" from the buffer
+	return kvs, nil
 }
 
 func parseReturn(buf *Buffer) (execute.Expression, error) {

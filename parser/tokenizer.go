@@ -52,6 +52,8 @@ var (
 		']': true,
 		'{': true,
 		'}': true,
+		',': true,
+		':': true,
 	}
 
 	operatorStarts = map[byte]bool{
@@ -71,7 +73,7 @@ var (
 )
 
 func isNumeralEnd(c byte) bool {
-	return whitespace[c] || singleCharTokens[c] || c == stringDelim || c == ',' || operatorStarts[c]
+	return whitespace[c] || singleCharTokens[c] || c == stringDelim || operatorStarts[c]
 }
 
 func isTokenEnd(c byte) bool {
@@ -79,7 +81,7 @@ func isTokenEnd(c byte) bool {
 }
 
 func isDelimeter(c byte) bool {
-	return singleCharTokens[c] || c == ','
+	return singleCharTokens[c]
 }
 
 func isOperator(s string) bool {

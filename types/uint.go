@@ -41,16 +41,20 @@ func (v *Uint) Equals(o execute.Value) bool {
 	return v.value == of.value
 }
 
-func (v *Uint) String() string {
-	return fmt.Sprintf("%du", v.value)
-}
-
 func (v *Uint) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Uint) HashBytes() ([]byte, error) {
+	return numToBytes(v.value), nil
+}
+
 func (v *Uint) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
+}
+
+func (v *Uint) String() string {
+	return fmt.Sprintf("%du", v.value)
 }
 
 func (v *Uint) ToBool() bool {

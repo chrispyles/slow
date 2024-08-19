@@ -211,7 +211,7 @@ var x = i % 2 == 0 ? f() : g()
 
 ### Lists
 
-Slow has a built-in `list` type backed by a Go slice. Lists literals are declared using square brackets
+Slow has a built-in `list` type backed by a Go slice. Lists literals are declared using square brackets:
 
 ```
 var l = []
@@ -240,7 +240,7 @@ The `list` type has several built-in methods, each of which is described below.
 
 <!-- TODO: more methods -->
 
-#### `list.append`
+##### `list.append`
 
 The `append` method of `list` adds an element to the end of that `list` in-place.
 
@@ -252,7 +252,7 @@ The `append` method of `list` adds an element to the end of that `list` in-place
 [1, 2, 3]
 ```
 
-#### `list.equals`
+##### `list.equals`
 
 The `equals` method of `list` compares it against another value. If the other value is also a list and each element of the two lists are equal (either by the `==` operator or `list.equals` if the corresponding elements are both themselves `list`s).
 
@@ -268,6 +268,62 @@ true
 -> [[1, 2], [2, 3]].equals([[1, 2], [2, 3]])
 true
 ```
+
+### Maps
+
+Slow has a built-in `map` type that is implemented using a hash table constructed from Go's `map` type. Map literals are declared using curly brackets:
+
+```
+var m = {}
+```
+
+Like lists, you can also specify elements in a map literal:
+
+```
+m = {1: 2, 3: 4, true: 1, "foo": "bar"}
+```
+
+Only hashable types may be used as `map` keys; the only types that are currently hashable are primitives. Any type may be used as a value in a `map`.
+
+#### Map Methods
+
+The `map` type has several built-in methods, each of which is described below.
+
+##### `map.get`
+
+The `get` method of a `map` returns the value corresponding to the provided key.
+
+```
+var m = {1: 2}
+m.get(1)
+#> 2
+```
+
+If the specified key is not in the map, a `KeyError` is thrown. You can specify a default value for a key by passing in a second value:
+
+```
+-> var m = {1: 2}
+{1: 2}
+-> m.get(1)
+2
+-> m.get(3, 4)
+4
+```
+
+##### `map.set`
+
+The `set` method of a `map` creates a new key-value pair in the map. It returns `true` if the key was already present in the map (i.e. if it was overwritten) and `false` if it was not.
+
+```
+-> var m = {1: 2}
+{1: 2}
+-> m.set(3, 4)
+false
+-> m.set(1, 3)
+true
+```
+
+The provided key must be of a hashable type.
 
 ### Conditionals
 
@@ -425,7 +481,7 @@ func isFactor(x, y) {
 
 ### List Slicing
 
-### Maps
+### Map Indexing
 
 ### Classes
 

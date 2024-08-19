@@ -32,6 +32,10 @@ func NoLengthError(t Type) *TypeError {
 	return TypeErrorFromMessage(fmt.Sprintf("TypeError: type %q does not have a length", t.String()))
 }
 
+func UnhashableTypeError(t Type) *TypeError {
+	return TypeErrorFromMessage(fmt.Sprintf("TypeError: type %q is not hashable", t.String()))
+}
+
 func TypeErrorFromMessage(msg string) *TypeError {
 	return &TypeError{message: msg}
 }

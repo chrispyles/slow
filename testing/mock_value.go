@@ -66,6 +66,10 @@ func (m *MockValue) GetAttribute(a string) (execute.Value, error) {
 	return ret, nil
 }
 
+func (m *MockValue) HashBytes() ([]byte, error) {
+	return nil, nil
+}
+
 func (m *MockValue) Length() (uint64, error) {
 	return m.LengthRet, m.LengthErr
 }

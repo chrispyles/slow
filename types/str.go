@@ -45,6 +45,10 @@ func (v *Str) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Str) HashBytes() ([]byte, error) {
+	return []byte(v.value), nil
+}
+
 func (v *Str) Length() (uint64, error) {
 	return uint64(len(v.value)), nil
 }

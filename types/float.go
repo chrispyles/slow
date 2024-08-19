@@ -46,6 +46,10 @@ func (v *Float) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Float) HashBytes() ([]byte, error) {
+	return numToBytes(v.value), nil
+}
+
 func (v *Float) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
 }

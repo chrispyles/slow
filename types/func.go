@@ -83,6 +83,10 @@ func (v *Func) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Func) HashBytes() ([]byte, error) {
+	return nil, errors.UnhashableTypeError(v.Type())
+}
+
 func (v *Func) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
 }

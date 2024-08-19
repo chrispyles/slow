@@ -26,6 +26,10 @@ func (v *null) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *null) HashBytes() ([]byte, error) {
+	return []byte{0x00}, nil
+}
+
 func (v *null) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
 }

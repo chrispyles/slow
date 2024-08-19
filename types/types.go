@@ -137,6 +137,25 @@ var ListType = &listType{}
 
 // -------------------------------------------------------------------------------------------------
 
+type mapType struct{}
+
+func (t *mapType) IsNumeric() bool {
+	return false
+}
+
+func (t *mapType) Matches(o execute.Type) bool {
+	_, ok := o.(*mapType)
+	return ok
+}
+
+func (t *mapType) String() string {
+	return "map"
+}
+
+var MapType = &mapType{}
+
+// -------------------------------------------------------------------------------------------------
+
 type nullType struct{}
 
 func (t *nullType) IsNumeric() bool {

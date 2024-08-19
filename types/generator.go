@@ -44,6 +44,10 @@ func (v *Generator) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Generator) HashBytes() ([]byte, error) {
+	return nil, errors.UnhashableTypeError(v.Type())
+}
+
 func (v *Generator) Length() (uint64, error) {
 	return 0, errors.NoLengthError(GeneratorType)
 }

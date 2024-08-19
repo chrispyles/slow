@@ -50,6 +50,10 @@ func (v *List) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *List) HashBytes() ([]byte, error) {
+	return nil, errors.UnhashableTypeError(v.Type())
+}
+
 func (v *List) Length() (uint64, error) {
 	return uint64(len(v.values)), nil
 }
