@@ -55,6 +55,7 @@ func newRangeGenerator(start, stop, step execute.Value) (*rangeGenerator, error)
 		}
 		return &rangeGenerator{
 			valueType: types.FloatType,
+			nextF:     startC,
 			startF:    startC,
 			stopF:     stopC,
 			stepF:     stepC,
@@ -74,6 +75,7 @@ func newRangeGenerator(start, stop, step execute.Value) (*rangeGenerator, error)
 		}
 		return &rangeGenerator{
 			valueType: types.IntType,
+			nextI:     startC,
 			startI:    startC,
 			stopI:     stopC,
 			stepI:     stepC,
@@ -95,6 +97,7 @@ func newRangeGenerator(start, stop, step execute.Value) (*rangeGenerator, error)
 		}
 		return &rangeGenerator{
 			valueType: types.UintType,
+			nextU:     startC,
 			startU:    startC,
 			stopU:     stopC,
 			stepU:     stepC,

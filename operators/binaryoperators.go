@@ -8,6 +8,12 @@ import (
 	"github.com/chrispyles/slow/types"
 )
 
+var logicalOperators = map[*BinaryOperator]bool{
+	BinOp_AND: true,
+	BinOp_OR:  true,
+	BinOp_XOR: true,
+}
+
 var reassignmentToArithmeticOperator = map[*BinaryOperator]*BinaryOperator{
 	BinOp_RPLUS:  BinOp_PLUS,
 	BinOp_RMINUS: BinOp_MINUS,
@@ -16,6 +22,9 @@ var reassignmentToArithmeticOperator = map[*BinaryOperator]*BinaryOperator{
 	BinOp_RMOD:   BinOp_MOD,
 	BinOp_RFDIV:  BinOp_FDIV,
 	BinOp_REXP:   BinOp_EXP,
+	BinOp_RAND:   BinOp_AND,
+	BinOp_ROR:    BinOp_OR,
+	BinOp_RXOR:   BinOp_XOR,
 }
 
 var incomparableTypes = map[execute.Type]bool{
@@ -54,6 +63,24 @@ func (o *BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 			return types.NewUint(must(l.ToUint()) % must(r.ToUint())), nil
 		}
 		return types.NewInt(must(l.ToInt()) % must(r.ToInt())), nil
+	}
+
+	if logicalOperators[o] {
+		lb, rb := l.ToBool(), r.ToBool()
+		switch o {
+		case BinOp_AND:
+			if !lb {
+				return l.CloneIfPrimitive(), nil
+			}
+			return r.CloneIfPrimitive(), nil
+		case BinOp_OR:
+			if lb {
+				return l.CloneIfPrimitive(), nil
+			}
+			return r.CloneIfPrimitive(), nil
+		case BinOp_XOR:
+			return types.NewBool((lb || rb) && !(lb && rb)), nil
+		}
 	}
 
 	caster, ok := newTypeCaster(lt, rt)

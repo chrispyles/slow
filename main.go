@@ -10,6 +10,8 @@ import (
 	"github.com/chrispyles/slow/config"
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/parser"
+	"github.com/chrispyles/slow/printer"
+	"github.com/chrispyles/slow/reader"
 	"github.com/chrispyles/slow/types"
 	"github.com/sanity-io/litter"
 )
@@ -42,7 +44,7 @@ func eval(s string, env *execute.Environment, printOut bool) {
 	}
 
 	if printOut && val != types.Null {
-		print(val.String(), "\n")
+		printer.Println(val.String())
 	}
 
 	if *config.Debug {
@@ -69,21 +71,18 @@ func main() {
 	}
 
 	if flag.NArg() == 0 || *interpreter {
-		fmt.Println("this is where I would put an interpreter... IF I HAD ONE")
-
 		rdr := bufio.NewReader(os.Stdin)
 		for {
-			fmt.Print("whisper to me> ")
-			line, err := rdr.ReadString('\n')
+			stmt, err := reader.Read(rdr)
 			if err != nil {
-				panic(err)
+				printError(err)
+				continue
 			}
-
-			eval(line, frame, true)
+			eval(stmt, frame, true)
 		}
 	}
 }
 
 func printError(err error) {
-	fmt.Printf("%+v\n", err)
+	printer.Printlnf("%+v", err)
 }

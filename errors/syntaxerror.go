@@ -3,9 +3,10 @@ package errors
 import "fmt"
 
 type SyntaxError struct {
-	message    string
-	symbol     string
-	lineNumber int
+	message     string
+	symbol      string
+	lineNumber  int
+	interpreter bool
 }
 
 func NewSyntaxError(buf Buffer, message string, symbol string) *SyntaxError {
@@ -20,10 +21,18 @@ func UnexpectedSymbolError(buf Buffer, got, want string) *SyntaxError {
 	return NewSyntaxError(buf, msg, got)
 }
 
+func InterpreterSyntaxError(msg string) *SyntaxError {
+	return &SyntaxError{message: msg, interpreter: true}
+}
+
 func (e *SyntaxError) Error() string {
 	var end string
 	if e.symbol != "" {
 		end = fmt.Sprintf(": %q", e.symbol)
 	}
-	return fmt.Sprintf("SyntaxError on line %d: %s%s", e.lineNumber, e.message, end)
+	var line string
+	if !e.interpreter {
+		line = fmt.Sprintf(" on line %d", e.lineNumber)
+	}
+	return fmt.Sprintf("SyntaxError%s: %s%s", line, e.message, end)
 }

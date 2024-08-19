@@ -59,7 +59,6 @@ var (
 )
 
 // binary operators
-// TODO: and, or, xor
 var (
 	// arithmetic operators
 	BinOp_PLUS  = newBinaryOperator("+")
@@ -69,6 +68,9 @@ var (
 	BinOp_MOD   = newBinaryOperator("%")
 	BinOp_FDIV  = newBinaryOperator("//")
 	BinOp_EXP   = newBinaryOperator("**")
+	BinOp_AND   = newBinaryOperator("&&")
+	BinOp_OR    = newBinaryOperator("||")
+	BinOp_XOR   = newBinaryOperator("^^")
 
 	// reassignment operators
 	BinOp_RPLUS  = newBinaryOperator("+=")
@@ -78,6 +80,9 @@ var (
 	BinOp_RMOD   = newBinaryOperator("%=")
 	BinOp_RFDIV  = newBinaryOperator("//=")
 	BinOp_REXP   = newBinaryOperator("**=")
+	BinOp_RAND   = newBinaryOperator("&&=")
+	BinOp_ROR    = newBinaryOperator("||=")
+	BinOp_RXOR   = newBinaryOperator("^^=")
 
 	// comparison operators
 	BinOp_EQ  = newBinaryOperator("==")

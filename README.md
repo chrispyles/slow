@@ -4,6 +4,24 @@
 
 ## Reference
 
+<!-- TODO: intro paragraph -->
+
+Some (not all) of the examples below use the interpreter format. In this format, statements are prefixed with `_>`, the interpreter prompt, and outputs are prefixed with `#>`. If a statement takes up multiple lines, all lines after the first will be prefixed with `..`. This format mimicks the Slow interpreter.
+
+```
+# This is the non-interpreter format
+var x = 2
+print(x)
+```
+
+```
+_> # This is the interpreter format
+_> var x = 2
+#> 2
+_> print(x)
+#> 2
+```
+
 ### Data Types
 
 Slow has the following primitive data types:
@@ -34,6 +52,8 @@ x = 0       # <- this is also a statement
   print(x)  # <- yet another statement
 ```
 
+<!-- TODO: all statements evaluate to a value -->
+
 ### Variables
 
 Variables must be declared with the `var` statement.
@@ -45,7 +65,8 @@ var x
 They can also be assigned in the same statement.
 
 ```
-var x = 1
+_> var x = 1
+#> 1
 ```
 
 Variables are scoped to the frame they're declared in. Setting a variable in a child frame that will update the value of the variable in the frame in which it was declared.
@@ -54,7 +75,7 @@ Variables are scoped to the frame they're declared in. Setting a variable in a c
 
 #### Binary Operators
 
-Slow supports the following binary operators:
+Slow supports the following arithmetic operators:
 
 | Operator | Description    |
 |----------|----------------|
@@ -71,6 +92,29 @@ When using arithmetic operators, the precedence of types is `float`, then `int`,
 - Divison (`/`) always returns a `float`.
 - Modulus (`%`) always returns an `int`.
 - Floor division (`//`) always returns an `int`.
+
+Each of the arithmetic operators has a reassignment variant that reassigns its left operand to the value of the expression; the syntax for these variants is the arithmetic operator suffixed with an `=`.
+
+```
+_> var x = 2
+#> 2
+_> x += 1
+#> 3
+_> x //= 2
+#> 1
+_> print(x)
+#> 1
+```
+
+Slow supports the following logical operators:
+
+| Operator | Description |
+|----------|-------------|
+| `&&`     | logical and |
+| `\|\|`   | logical or  |
+| `^^`     | logical xor |
+
+Both the `&&` and `||` operators short-circuit; that is, the second operand of `&&` and `||` are only evaluated if the first is falsely and truthy, respectively. `&&` and `||` also do not change the types of their operands (e.g. `1 && 2` returns `1`, not `true`), but `^^` always returns a `bool`. All logical operators also have a reassignment variant (`&&=`, `||=`, `^^=`).
 
 Slow supports the following comparison operators:
 
@@ -116,9 +160,10 @@ l = [1, 2, 3]
 The `append` method of a list adds an element to the end of that list in-place.
 
 ```
-var l = [1, 2]
-l.append(3)
-print(l)
+_> var l = [1, 2]
+#> [1, 2]
+_> l.append(3)
+_> print(l)
 #> [1, 2, 3]
 ```
 
@@ -134,9 +179,14 @@ Slow supports control flow with `for` and `while` loops.
 `for` loops iterate over a pre-defined set of values returned by an [iterator](#iterators). The `for` loop has the syntax `for <loop variable> in <iterator>` followed by a body enclosed in curly brackets.
 
 ```
-for i in range(20) {
-  print(i)
-}
+_> for i in range(5) {
+..   print(i)
+.. }
+#> 0
+#> 1
+#> 2
+#> 3
+#> 4
 ```
 
 `while` loops iterate while a condition evaluates to a truthy value and have the syntax `while <condition>` followed by a body enclosed in curly brackets.

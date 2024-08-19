@@ -215,6 +215,7 @@ func parseArgList(buf *Buffer, endToken string) ([]execute.Expression, error) {
 			return nil, errors.UnexpectedSymbolError(buf, next, ",")
 		}
 		buf.Pop() // remove "," from the buffer
+		buf.ConsumeNewlines()
 	}
 	buf.Pop() // remove endToken from the buffer
 	return args, nil
