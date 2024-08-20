@@ -78,6 +78,10 @@ func main() {
 				printError(err)
 				continue
 			}
+			if stmt == "\n" {
+				// Don't attempt to execute an empty line
+				continue
+			}
 			eval(stmt, frame, true)
 		}
 	}
