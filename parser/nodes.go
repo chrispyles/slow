@@ -171,11 +171,11 @@ func (n *ForNode) Execute(e *execute.Environment) (execute.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	frame := e.NewFrame()
-	if err := frame.Declare(n.IterName); err != nil {
-		return nil, err
-	}
 	for iter.HasNext() {
+		frame := e.NewFrame()
+		if err := frame.Declare(n.IterName); err != nil {
+			return nil, err
+		}
 		expr, err := iter.Next()
 		if err != nil {
 			return nil, err

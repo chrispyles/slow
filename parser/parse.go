@@ -213,7 +213,11 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err := validateSymbol(buf, sym); err != nil {
 			return nil, err
 		}
-		return parseExpression(buf, &AttributeNode{Left: val, Right: sym})
+		expr, err := parseExpression(buf, &AttributeNode{Left: val, Right: sym})
+		if err != nil {
+			return nil, err
+		}
+		return parseExpression(buf, expr)
 	}
 	if c == "=" {
 		// This is a variable assignment
@@ -383,7 +387,13 @@ func parseBinaryOperation(buf *Buffer, op *operators.BinaryOperator, left execut
 		}
 		expectClose(buf, ")") // remove ")" from the buffer
 	} else {
-		right, err = evaluateLiteralToken(c, buf)
+		if nc := buf.Current(); nc == "." || nc == "[" || nc == "(" { // TODO: other chars?
+			// The next operand is an expression, so parse it.
+			buf.MoveBack()
+			right, err = parseExpressionStart(buf)
+		} else {
+			right, err = evaluateLiteralToken(c, buf)
+		}
 	}
 	if err != nil {
 		return nil, err
