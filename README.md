@@ -65,7 +65,21 @@ All values are truthy except `false`, `0` (in all numeric types), `""`, and `nul
 
 #### Strings
 
-<!-- TODO: escape sequences -->
+Strings are delimited by double quote `"` characters. They must be on a single line and allow the following escape sequences:
+
+| Sequence | Description               |
+|----------|---------------------------|
+| `\"`     | double quote character    |
+| `\n`     | newline character         |
+| `\r`     | carriage return character |
+| `\t`     | tab character             |
+| `\\`     | backslash character       |
+
+```
+-> print("___garoo\rkan\njump")
+kangaroo
+jump
+```
 
 ### Statements
 
@@ -78,8 +92,27 @@ x = 0       # <- this is also a statement
   print(x)  # <- yet another statement
 ```
 
-<!-- TODO: all statements evaluate to a value -->
-<!-- TODO: subexpressions wrapped in parens are evaluated first -->
+Every statement in Slow evaluates to a value. For bocks, this is the return value of the final statement in the block. For example, an `if`/`else` block evaluates to the value of the last statement in whichever branch was executed. A `for` loop evaluates to the value of the last statement in the last iteration.
+
+```
+-> var x = 0
+0
+-> if x {
+..   1
+.. }
+.. else {
+..   0
+.. }
+..
+0
+-> for x in range(10) {
+..   x
+.. }
+..
+9
+```
+
+WARNING: Despite the fact that every statement evaluates to a value, not all statements can be bound to a variable and Slow does not support implicit returns.
 
 ### Variables
 
@@ -144,6 +177,13 @@ When using arithmetic operators, the precedence of types is `float`, then `int`,
 
 Also note that the expotentiation operator, `**`, is backed by Go's [`math.Pow` function](https://pkg.go.dev/math#Pow), meaning its operands are converted to `float64`s and the result is converted from `float64` to the correct result type.
 
+The addition operator `+` can also be used to concatenate strings:
+
+```
+-> "foo" + "bar"
+"foobar"
+```
+
 Each of the arithmetic operators has a reassignment variant that reassigns its left operand to the value of the expression; the syntax for these variants is the arithmetic operator suffixed with an `=` (`+=`, `-=`, `*=`, `/=`, `%=`, `//=`, `**=`).
 
 ```
@@ -182,9 +222,48 @@ Slow supports the following comparison operators:
 
 The `==` and `!=` support all types. (Note that all non-primitive types, like [lists](#lists), are compared by reference and not by value.) The other comparison operators only support numeric types and strings.
 
+The table below shows the precedence of each binary operator (a lower precedence means the operation is executed sooner). Arithmetic operators follow the [standard order of operations](https://en.wikipedia.org/wiki/Order_of_operations).
+
+| Operator | Precedence |
+|----------|------------|
+| `**`     | 0          |
+| `*`      | 1          |
+| `/`      | 1          |
+| `//`     | 1          |
+| `%`      | 1          |
+| `+`      | 2          |
+| `-`      | 2          |
+| `==`     | 3          |
+| `!=`     | 4          |
+| `<`      | 4          |
+| `<=`     | 4          |
+| `>`      | 4          |
+| `>=`     | 4          |
+
+All reassignment operators have a higher precedenece than any other operator, and only one reassignment operator may be present in a single statement.
+
+Subexpressions wrapped in parentheses are executed before the rest of the expression, and can be used to override operator precedence:
+
+```
+-> 2 + 3 * 4
+14
+-> (2 + 3) * 4
+20
+```
+
 #### Unary Operators
 
-<!-- TODO -->
+Slow supports the following unary operators:
+
+| Operator | Description      |
+|----------|------------------|
+| `+`      | no-op            |
+| `-`      | numeric negation |
+| `!`      | logical negation |
+| `++`     | increment        |
+| `--`     | decrement        |
+
+The unary `+` operator is like multiplying a value by `1u`. The `-` operator flips the sign of its argument, and can only be used with numeric types. The `!` operator returns the logical negation of its operand, can be used with any type of value, and always returns a `bool`.
 
 The unary reassignment operators (`++` and `--`) return the value of the variable **before** the operation but set the value of the variable/field to the value after applying the operation.
 
@@ -237,8 +316,6 @@ Lists are zero-indexed. To retrieve the element of a list at a particular index,
 #### List Methods
 
 The `list` type has several built-in methods, each of which is described below.
-
-<!-- TODO: more methods -->
 
 ##### `list.append`
 
@@ -455,7 +532,9 @@ for e in [1, 2, 3] {
 
 ### Functions
 
-<!-- TODO -->
+Functions in Slow are declared using the `func` keyword. A function can have zero or more arguments and returns `null` by default unless a `return` statement is included.
+
+The syntax for declaring a function is `func <name>(<arg1>, <arg2>, <etc>)` followed by its body enclosed in curly brackets.
 
 ```
 func isFactor(x, y) {
@@ -463,17 +542,97 @@ func isFactor(x, y) {
 }
 ```
 
+Like everything in Slow, functions are also values and can be treated as such.
+
+```
+-> func mysteryFunc(x) { return x % 2 == 0 }
+<func mysteryFunc>
+-> var isEven = mysteryFunc
+<func mysteryFunc>
+-> isEven(2)
+true
+```
+
 #### Built-in Functions
+
+Slow has a few functions built into the language. They are declared in a frozen frame that is the parent of the frame that the global environment is declared in.
 
 ##### `exit`
 
+The `exit` function exits the Slow interpreter. It takes 1 optional argument, an integer indicating the exit code, which defaults to 0.
+
+```
+-> exit()
+Exiting with code 0
+```
+
+```
+-> exit(1)
+Exiting with code 1
+```
+
 ##### `len`
+
+The `len` function returns the length of the provided value if it is supported. Currently, the only types in Slow that have lengths are `list`s and `map`s. `len` always returns a `uint`.
+
+```
+-> var l = [1, 2, 3]
+[1, 2, 3]
+-> len(l)
+3u
+-> len({1: 2, 3: 4})
+2u
+```
 
 ##### `print`
 
+`print` prints its arguments to stdout followed by a newline character. It can accept any number of arguments, converts them to their string representation, and concatenates those strings.
+
+```
+-> print(1u, 2, 3., "foo")
+1u23.0foo
+```
+
 ##### `range`
 
+The `range` function creates a generator for a range of numbers. It can take either 1, 2, or 3 arguments.
+
+- If it receives 1 argument `n`, the generator it returns yields the sequence `0, 1, 2, ..., n-1`.
+- If it receives two arguments `m` and `n`, the generator yields the sequence `m, m+1, m+2, ..., n-1`. If `m > n`, the generator is infinite.
+- If it receives three arguments `m`, `n`, and `k`, the generator yields the sequence `m, m+k, m+2*k, ..., m+jk` where `m+jk` is the largested possible value less than `n`.
+
+```
+range(10)        # yields 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+range(2, 10)     # yields 2, 3, 4, 5, 6, 7, 8, 9
+range(2, 10, 3)  # yields 2, 5, 8
+```
+
 ##### `type`
+
+The `type` function takes a single argument and returns a string representing the type of its argument.
+
+```
+-> type(true)
+"bool"
+-> type(1.)
+"float"
+-> type(range)
+"func"
+-> type(range(1))
+"generator"
+-> type(1)
+"int"
+-> type([])
+"list"
+-> type({})
+"map"
+-> type(null)
+"null"
+-> type("")
+"str"
+-> type(1u)
+"uint"
+```
 
 ## Planned Features
 

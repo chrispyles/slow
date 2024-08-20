@@ -106,6 +106,68 @@ func TestNewRootEnvironment(t *testing.T) {
 	}
 }
 
+func TestBuiltins_type(t *testing.T) {
+	tests := []struct {
+		value execute.Value
+		want  string
+	}{
+		{
+			types.NewBool(true),
+			"bool",
+		},
+		{
+			types.NewFloat(1),
+			"float",
+		},
+		{
+			types.NewFunc("", nil, nil),
+			"func",
+		},
+		{
+			types.NewGenerator(nil),
+			"generator",
+		},
+		{
+			types.NewInt(1),
+			"int",
+		},
+		{
+			types.NewList(nil),
+			"list",
+		},
+		{
+			types.NewMap(),
+			"map",
+		},
+		{
+			types.Null,
+			"null",
+		},
+		{
+			types.NewStr(""),
+			"str",
+		},
+		{
+			types.NewUint(1),
+			"uint",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.want, func(t *testing.T) {
+			env := NewRootEnvironment()
+			f, _ := env.Get("type")
+			c, _ := f.ToCallable()
+			gotv, err := c.Call(env, tc.value)
+			if err != nil {
+				t.Fatalf("c.Call() returned unexpected error: %v", err)
+			}
+			if got, _ := gotv.(*types.Str).ToStr(); got != tc.want {
+				t.Errorf("builtin type() returned %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestNewRootEnvironmentIsFrozen(t *testing.T) {
 	env := NewRootEnvironment()
 	defer func() {
