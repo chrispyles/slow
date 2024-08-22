@@ -1,5 +1,7 @@
 # The Slow Programming Language
 
+<img src="logos/logo.png" width="256" alt="Slow logo">
+
 The Slow programming language is a dynamically-typed interpreted programming language implemented in Go.
 
 ## Installation
