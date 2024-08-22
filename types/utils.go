@@ -41,13 +41,13 @@ func compareNumbers[T float64 | int64 | uint64](v1, v2 T) int {
 
 func numToBytes[T float64 | int64 | uint64](v T) []byte {
 	var u uint64
-	switch any(v).(type) {
+	switch v := any(v).(type) {
 	case float64:
-		u = math.Float64bits(any(v).(float64))
+		u = math.Float64bits(v)
 	case int64:
 		u = uint64(v)
 	case uint64:
-		u = any(v).(uint64)
+		u = v
 	default:
 		panic("unhandled type in numToBytes()")
 	}

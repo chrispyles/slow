@@ -61,9 +61,9 @@ func (n *BinaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 		return nil, err
 	}
 	if n.Op.IsReassignmentOperator() {
-		switch n.Left.(type) {
+		switch left := n.Left.(type) {
 		case *VariableNode:
-			return e.Set(n.Left.(*VariableNode).Name, val)
+			return e.Set(left.Name, val)
 		case *AttributeNode:
 			// TODO
 			return nil, nil
@@ -353,9 +353,9 @@ func (n *UnaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 	if n.Op.IsReassignmentOperator() {
 		// Reassignment operators return the value of the operand BEFORE the operation, but update its
 		// value in the environment/object.
-		switch n.Expr.(type) {
+		switch expr := n.Expr.(type) {
 		case *VariableNode:
-			_, err := e.Set(n.Expr.(*VariableNode).Name, val)
+			_, err := e.Set(expr.Name, val)
 			if err != nil {
 				return nil, err
 			}
