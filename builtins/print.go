@@ -6,6 +6,8 @@ import (
 	"github.com/chrispyles/slow/types"
 )
 
+var println = printer.Println
+
 func printImpl(args ...execute.Value) (execute.Value, error) {
 	var fullout string
 	for _, v := range args {
@@ -19,6 +21,6 @@ func printImpl(args ...execute.Value) (execute.Value, error) {
 		}
 		fullout += out
 	}
-	printer.Println(fullout)
+	println(fullout)
 	return types.Null, nil
 }

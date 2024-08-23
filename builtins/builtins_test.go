@@ -29,15 +29,14 @@ var allowUnexported = cmp.AllowUnexported(
 	types.Uint{},
 )
 
-// TODO: tests for exit()
-
-func TestNewRootEnvironment(t *testing.T) {
+func TestBuiltins(t *testing.T) {
 	tests := []struct {
-		name    string
-		fn      string
-		args    []execute.Value
-		want    execute.Value
-		wantErr error
+		name         string
+		fn           string
+		args         []execute.Value
+		want         execute.Value
+		wantPrintlns []string
+		wantErr      error
 	}{
 		// TODO: exit
 		{
@@ -71,22 +70,43 @@ func TestNewRootEnvironment(t *testing.T) {
 		},
 		{
 			name: "print_string",
+			fn:   "print",
+			args: []execute.Value{
+				types.NewStr("foo"),
+			},
+			want:         types.Null,
+			wantPrintlns: []string{"foo"},
 		},
 		{
-			name: "print_int",
-		},
-		{
-			name: "print_float",
+			name: "print_value",
+			fn:   "print",
+			args: []execute.Value{
+				&slowtesting.MockValue{StringRet: "MOCK_VALUE"},
+			},
+			want:         types.Null,
+			wantPrintlns: []string{"MOCK_VALUE"},
 		},
 		{
 			name: "print_many",
+			fn:   "print",
+			args: []execute.Value{
+				&slowtesting.MockValue{StringRet: "MV1"},
+				&slowtesting.MockValue{StringRet: "MV2"},
+				&slowtesting.MockValue{StringRet: "MV3"},
+			},
+			want:         types.Null,
+			wantPrintlns: []string{"MV1MV2MV3"},
 		},
-		// TODO: print, range, type
+		// TODO: range
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			env := NewRootEnvironment()
+			var printed []string
+			println = func(s string) {
+				printed = append(printed, s)
+			}
+			env := RootEnvironment.NewFrame()
 			fn, err := env.Get(tc.fn)
 			if err != nil {
 				t.Fatalf("Get() returned unexpected error: %v", err)
@@ -101,6 +121,9 @@ func TestNewRootEnvironment(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want, got, allowUnexported); diff != "" {
 				t.Errorf("c.Call() returned incorrect value (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.wantPrintlns, printed); diff != "" {
+				t.Errorf("println called incorrectly (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -154,7 +177,7 @@ func TestBuiltins_type(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.want, func(t *testing.T) {
-			env := NewRootEnvironment()
+			env := RootEnvironment.NewFrame()
 			f, _ := env.Get("type")
 			c, _ := f.ToCallable()
 			gotv, err := c.Call(env, tc.value)
@@ -169,11 +192,9 @@ func TestBuiltins_type(t *testing.T) {
 }
 
 func TestNewRootEnvironmentIsFrozen(t *testing.T) {
-	env := NewRootEnvironment()
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("env.Set did not panic")
-		}
-	}()
-	env.Set("foo", &slowtesting.MockValue{})
+	// Attempt to reassign a variable that is bound to a built-in, so we know it's already declared.
+	_, err := RootEnvironment.Set("import", &slowtesting.MockValue{})
+	if err == nil {
+		t.Errorf("env.Set did not error")
+	}
 }
