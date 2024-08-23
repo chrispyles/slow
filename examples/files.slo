@@ -1,0 +1,23 @@
+const fs = import("fs")
+
+func readCsv(path) {
+  var rows = []
+  var currRow = []
+  var currValue = ""
+  for c in fs.read(path) {
+    if c == "\n" {
+      rows.append(currRow)
+      currRow = []
+    }
+    else if c == "," {
+      currRow.append(currValue)
+    }
+    else {
+      currValue += c
+    }
+  }
+  # TODO: this doesn't handle the case when there isn't a trailing newline in the file
+  return rows
+}
+
+print(readCsv("data.csv"))

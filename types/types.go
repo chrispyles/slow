@@ -23,6 +23,25 @@ var BoolType = &boolType{}
 
 // -------------------------------------------------------------------------------------------------
 
+type bytesType struct{}
+
+func (t *bytesType) IsNumeric() bool {
+	return true
+}
+
+func (t *bytesType) Matches(o execute.Type) bool {
+	_, ok := o.(*bytesType)
+	return ok
+}
+
+func (t *bytesType) String() string {
+	return "bytes"
+}
+
+var BytesType = &bytesType{}
+
+// -------------------------------------------------------------------------------------------------
+
 type floatType struct{}
 
 func (t *floatType) IsNumeric() bool {
@@ -153,6 +172,25 @@ func (t *mapType) String() string {
 }
 
 var MapType = &mapType{}
+
+// -------------------------------------------------------------------------------------------------
+
+type moduleType struct{}
+
+func (t *moduleType) IsNumeric() bool {
+	return false
+}
+
+func (t *moduleType) Matches(o execute.Type) bool {
+	_, ok := o.(*moduleType)
+	return ok
+}
+
+func (t *moduleType) String() string {
+	return "module"
+}
+
+var ModuleType = &moduleType{}
 
 // -------------------------------------------------------------------------------------------------
 

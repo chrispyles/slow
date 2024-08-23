@@ -1,0 +1,12 @@
+func fib(n) {
+  var l = [0, 1]
+  for i in range(2, n + 1) {
+    var li = l[i - 1] + l[i - 2]
+    l.append(li)
+  }
+  return l[n]
+}
+
+for x in range(20) {
+  print(fib(x))
+}

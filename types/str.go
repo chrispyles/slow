@@ -34,11 +34,11 @@ func (v *Str) CompareTo(o execute.Value) (int, bool) {
 }
 
 func (v *Str) Equals(o execute.Value) bool {
-	of, ok := o.(*Str)
+	os, ok := o.(*Str)
 	if !ok {
 		return false
 	}
-	return v.value == of.value
+	return v.value == os.value
 }
 
 func (v *Str) GetAttribute(a string) (execute.Value, error) {

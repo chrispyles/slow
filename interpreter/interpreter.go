@@ -15,7 +15,7 @@ import (
 	"github.com/sanity-io/litter"
 )
 
-func eval(s string, env *execute.Environment, printOut bool) {
+func eval(s string, env *execute.Environment, printExprValue bool) {
 	ast, err := parser.NewAST(s)
 	if err != nil {
 		printError(err)
@@ -38,7 +38,7 @@ func eval(s string, env *execute.Environment, printOut bool) {
 		panic("ast.Execute returned nil")
 	}
 
-	if printOut && val != types.Null {
+	if printExprValue && val != types.Null {
 		printer.Println(val.String())
 	}
 

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"regexp"
@@ -38,7 +39,8 @@ const (
 	kw_RETURN = "return"
 
 	// declarations
-	kw_VAR = "var"
+	kw_VAR   = "var"
+	kw_CONST = "const"
 
 	// values
 	kw_TRUE  = "true"
@@ -50,6 +52,7 @@ var (
 	intRegex    = regexp.MustCompile(`^\d+$`)
 	uintRegex   = regexp.MustCompile(`^\d+u$`)
 	floatRegex  = regexp.MustCompile(`^\d*\.\d*$`)
+	bytesRegex  = regexp.MustCompile(`^0x[\dA-Fa-f]+$`)
 	symbolRegex = regexp.MustCompile(`^[A-Za-z_]\w*$`)
 )
 
@@ -76,7 +79,8 @@ var reservedKeywords = map[string]bool{
 	kw_RETURN: true,
 
 	// declarations
-	kw_VAR: true,
+	kw_VAR:   true,
+	kw_CONST: true,
 
 	// values
 	kw_TRUE:  true,
@@ -301,6 +305,18 @@ func evaluateLiteralToken(tkn string, buf *Buffer) (execute.Expression, error) {
 			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as float", tkn))
 		}
 		return &ConstantNode{Value: types.NewFloat(floatValue)}, nil
+	}
+	if bytesRegex.Match(tknBytes) {
+		if len(tknBytes)%2 != 0 {
+			return nil, errors.NewSyntaxError(buf, "bytes must have an even number of characters", tkn)
+		}
+		bytes := make([]byte, hex.DecodedLen(len(tknBytes)-2))
+		// Trim "0x" off the beginning of the token.
+		_, err := hex.Decode(bytes, tknBytes[2:])
+		if err != nil {
+			return nil, err
+		}
+		return &ConstantNode{Value: types.NewBytes(bytes)}, nil
 	}
 	if tkn[0] == stringDelim {
 		return parseString(buf, tkn)
@@ -626,12 +642,21 @@ func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expr
 }
 
 func parseVar(buf *Buffer) (execute.Expression, error) {
+	// Move buffer back one to check if this is a `var` or `const` statement.
+	buf.MoveBack()
+	var isConst bool
+	if buf.Pop() == kw_CONST {
+		isConst = true
+	}
 	name := buf.Pop()
 	if err := validateSymbol(buf, name); err != nil {
 		return nil, err
 	}
-	node := &VarNode{Name: name}
+	node := &VarNode{Name: name, IsConst: isConst}
 	if buf.Current() != "=" {
+		if isConst {
+			return nil, errors.NewSyntaxError(buf, "const expression does not initialize a value", "")
+		}
 		return node, nil
 	}
 	buf.Pop() // remove "=" from the buffer
@@ -681,6 +706,7 @@ func init() {
 		kw_RETURN: parseReturn,
 
 		// declarations
-		kw_VAR: parseVar,
+		kw_VAR:   parseVar,
+		kw_CONST: parseVar,
 	}
 }

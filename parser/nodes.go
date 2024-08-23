@@ -374,21 +374,32 @@ func (n *UnaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 // Var node
 
 type VarNode struct {
-	Name string
+	Name    string
+	IsConst bool
 	// Value of the expression if it is assigned; may be nil
 	Value execute.Expression
 }
 
 func (n *VarNode) Execute(e *execute.Environment) (execute.Value, error) {
-	if err := e.Declare(n.Name); err != nil {
-		return nil, err
-	}
+	var val execute.Value
 	if n.Value != nil {
-		expr, err := n.Value.Execute(e)
+		var err error
+		val, err = n.Value.Execute(e)
 		if err != nil {
 			return nil, err
 		}
-		return e.Set(n.Name, expr)
+	}
+	if n.IsConst {
+		if val == nil {
+			panic("encountered const node with no value")
+		}
+		return e.DeclareConst(n.Name, val)
+	}
+	if err := e.Declare(n.Name); err != nil {
+		return nil, err
+	}
+	if val != nil {
+		return e.Set(n.Name, val)
 	}
 	return types.Null, nil
 }

@@ -1,15 +1,27 @@
 package execute
 
-import "github.com/chrispyles/slow/errors"
+import (
+	"fmt"
+
+	"github.com/chrispyles/slow/errors"
+)
 
 type Environment struct {
 	values map[string]Value
+	consts map[string]bool
 	parent *Environment
 	frozen bool
 }
 
 func NewEnvironment() *Environment {
-	return &Environment{values: make(map[string]Value)}
+	return &Environment{values: make(map[string]Value), consts: make(map[string]bool)}
+}
+
+// FromMap returns a frozen Environment from the provided map.
+func FromMap(values map[string]Value) *Environment {
+	e := &Environment{values: values}
+	e.Freeze()
+	return e
 }
 
 func (e *Environment) Declare(n string) error {
@@ -21,6 +33,18 @@ func (e *Environment) Declare(n string) error {
 	}
 	e.values[n] = nil
 	return nil
+}
+
+func (e *Environment) DeclareConst(n string, v Value) (Value, error) {
+	if err := e.Declare(n); err != nil {
+		return nil, err
+	}
+	v, err := e.Set(n, v)
+	if err != nil {
+		return nil, err
+	}
+	e.consts[n] = true
+	return v, nil
 }
 
 func (e *Environment) Get(n string) (Value, error) {
@@ -42,7 +66,10 @@ func (e *Environment) NewFrame() *Environment {
 
 func (e *Environment) Set(n string, v Value) (Value, error) {
 	if e.frozen {
-		panic("can't declare or set variables in a frozen environment")
+		return nil, errors.NewRuntimeError("cannot assign variables in a frozen environment")
+	}
+	if e.consts[n] {
+		return nil, errors.TypeErrorFromMessage(fmt.Sprintf("cannot reassign constant %q", n))
 	}
 	if _, ok := e.values[n]; ok {
 		e.values[n] = v

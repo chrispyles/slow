@@ -1,0 +1,58 @@
+func romanToDecimal(s) {
+  var result = 0
+  var previous = 0
+  var curr = 0
+  for c in s {
+    switch c {
+      case "I" {
+        curr = 1
+      }
+      case "V" {
+        curr = 5
+      }
+      case "X" {
+        curr = 10
+      }
+      case "L" {
+        curr = 50
+      }
+      case "C" {
+        curr = 100
+      }
+      case "D" {
+        curr = 500
+      }
+      case "M" {
+        curr = 1000
+      }
+    }
+
+    if previous < curr {
+      # If the last value is less than the current value, it should have been subtracted from the
+      # result, so subtract twice its value to cancel out when it was added in the last iteration
+      # and account for its subtraction from the result. This handles cases like
+      # "IX" = 1 + (-2 * 1) + 10 = 9
+      result += -2 * previous
+    }
+
+    result += curr
+    previous = curr
+  }
+}
+
+for r in [
+  "I",          # 1
+  "II",         # 2
+  "IV",         # 4
+  "V",          # 5
+  "IX",         # 9
+  "X",          # 10
+  "XIV",        # 14
+  "LXX",        # 70
+  "XC",         # 90
+  "MDCCLXXVI",  # 1776
+  "MCMXCIX",    # 1999
+  "MMXXIV",     # 2024
+] {
+  print(r, " -> ", romanToDecimal(r))
+}

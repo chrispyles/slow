@@ -58,12 +58,15 @@ Slow has the following primitive data types:
 - `float`: `1.`, `2.1`, `3.14`, `.02` etc.
 - `int`: `1`, `2`, `-1`, etc.
 - `uint`: `0u`, `1u`, `2u`, etc.
-- `str`: `"The quick brown fox jumps over the lazy dog."`
+- `str`: an immutable character sequence, `"The quick brown fox jumps over the lazy dog."`
+- `bytes`: an immutable byte sequence, `0xDEADBEEF`
 - `null`
 
 All numeric data types (except `bool`) are 64 bits (backed by Go's 64-bit number types).
 
-All values are truthy except `false`, `0` (in all numeric types), `""`, and `null`.
+When converting from `bytes` to `float`, `int`, or `uint`, the bytes are decoded using the big-endian binary format. For example, 0xBEEF is converted to a `uint` as `48879u`, not `61374u`.
+
+All values are truthy except `false`, `0` (in all numeric types), `""`, a `bytes` object with all null bytes (e.g. `0x00`), and `null`.
 
 #### Strings
 
@@ -129,6 +132,12 @@ They can also be assigned in the same statement.
 ```
 -> var x = 1
 1
+```
+
+To define a constant variable, use a `const` statement. Constants must be initialized with a value when they are declared and cannot be reassigned (although it is possible to declare a new variable with the same name in a child frame).
+
+```
+const x = 1
 ```
 
 Variables are scoped to the frame they're declared in. Setting a variable in a child frame will update the value of the variable in the frame in which it was declared.
@@ -573,6 +582,15 @@ Exiting with code 0
 Exiting with code 1
 ```
 
+##### `import`
+
+The `import` function imports a module. It takes 1 argument, either a path to another Slow file (with extesnion `.slo`) or the name a of a built-in module (e.g. `fs`) and returns a [`module`](#modules). If the argument is a path, the file is read and executed, and the resulting global environment is converted to a `module`.
+
+```
+const fs = import("fs")
+const utils = import("utils.slo")
+```
+
 ##### `len`
 
 The `len` function returns the length of the provided value if it is supported. Currently, the only types in Slow that have lengths are `list`s and `map`s. `len` always returns a `uint`.
@@ -634,6 +652,63 @@ The `type` function takes a single argument and returns a string representing th
 "str"
 -> type(1u)
 "uint"
+```
+
+### Modules
+
+Slow supports importing objects and functions from other Slow files or from built-in modules via the `module` type. `module`s are frozen; that is, new variables can't be declared in them nor can variables be rebound. A `module` can be created using the [`import` function](#import) and variables in its environment can be accessed use dot syntax.
+
+For example, to import a `module` from another Slow file:
+
+```
+# logging.slo
+func info(s) {
+  print(s)
+}
+```
+
+```
+const logging = import("logging.slo")
+
+logging.info("successfully imported logging.slo")
+```
+
+Or, to import a built-in module:
+
+```
+const fs = import("fs")
+
+print(fs.read("foo.txt"))
+```
+
+#### Built-in Modules
+
+This section describes Slow's built-in modules. Any built-in module can be imported by passing a string with its name to `import`:
+
+```
+const fs = import("fs")
+```
+
+##### `fs`
+
+The `fs` module provides functions for interacting with the file system.
+
+###### `fs.read`
+
+`fs.read` takes a path to a file and returns a `str` with its contents. The file must be UTF-8 encoded.
+
+```
+const fs = import("fs")
+fs.read("foo.txt")
+```
+
+###### `fs.readBytes`
+
+`fs.readBytes` takes a path to a file and returns a `bytes` with its contents.
+
+```
+const fs = import("fs")
+fs.readBytes("foo.txt")
 ```
 
 ## Planned Features
