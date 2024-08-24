@@ -241,7 +241,12 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err != nil {
 			return nil, err
 		}
-		return &CallNode{Func: val, Args: args}, nil
+		node := &CallNode{Func: val, Args: args}
+		if buf.Current() != "\n" {
+			// There is more to this expression.
+			return parseExpression(buf, node)
+		}
+		return node, nil
 	}
 	if c == "[" {
 		// TODO: indexing
@@ -617,18 +622,17 @@ func parseSwitch(buf *Buffer) (execute.Expression, error) {
 func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expression, error) {
 	var expr execute.Expression
 	var err error
-	c := buf.Pop()
-	if c == "(" {
-		expr, err = parseExpressionStart(buf)
-		if err != nil {
-			return nil, err
-		}
-		expectClose(buf, ")") // remove ")" from the buffer
-	} else {
-		expr, err = evaluateLiteralToken(c, buf)
+	var wantClosingParen bool
+	if buf.Current() == "(" {
+		buf.Pop()
+		wantClosingParen = true
 	}
+	expr, err = parseExpressionStart(buf)
 	if err != nil {
 		return nil, err
+	}
+	if wantClosingParen {
+		expectClose(buf, ")") // remove ")" from the buffer
 	}
 	if op.IsReassignmentOperator() {
 		// Ensure that the left operand is assignable if the operator is a reassignment operator.
