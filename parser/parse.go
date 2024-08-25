@@ -172,14 +172,14 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 			if err != nil {
 				return nil, err
 			}
-			return &ListNode{Values: values}, nil
+			return contExpressionParsing(buf, &ListNode{Values: values})
 		} else if tkn == "{" {
 			// This is an inline map
 			values, err := parseMap(buf)
 			if err != nil {
 				return nil, err
 			}
-			return &MapNode{Values: values}, nil
+			return contExpressionParsing(buf, &MapNode{Values: values})
 		} else {
 			val, err = evaluateLiteralToken(tkn, buf)
 		}
@@ -241,18 +241,21 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err != nil {
 			return nil, err
 		}
-		node := &CallNode{Func: val, Args: args}
-		if buf.Current() != "\n" {
-			// There is more to this expression.
-			return parseExpression(buf, node)
-		}
-		return node, nil
+		return contExpressionParsing(buf, &CallNode{Func: val, Args: args})
 	}
 	if c == "[" {
 		// TODO: indexing
 		return nil, nil
 	}
 	return nil, errors.UnexpectedSymbolError(buf, c, "")
+}
+
+func contExpressionParsing(buf *Buffer, expr execute.Expression) (execute.Expression, error) {
+	if buf.Current() != "\n" {
+		// There is more to this expression.
+		return parseExpression(buf, expr)
+	}
+	return expr, nil
 }
 
 func parseArgList(buf *Buffer, endToken string) ([]execute.Expression, error) {

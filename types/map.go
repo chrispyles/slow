@@ -50,12 +50,19 @@ func NewMap() *Map {
 	return &Map{seed: maphash.MakeSeed(), entries: make(map[uint64][]*mapEntry)}
 }
 
+func (v *Map) hash(val execute.Value) (uint64, error) {
+	hb, err := val.HashBytes()
+	if err != nil {
+		return 0, err
+	}
+	return maphash.Bytes(v.seed, hb), nil
+}
+
 func (v *Map) Get(key execute.Value, defaultValue execute.Value) (execute.Value, error) {
-	hb, err := key.HashBytes()
+	h, err := v.hash(key)
 	if err != nil {
 		return nil, err
 	}
-	h := maphash.Bytes(v.seed, hb)
 	if es, ok := v.entries[h]; ok {
 		for _, e := range es {
 			if key.Equals(e.key) {
@@ -70,11 +77,10 @@ func (v *Map) Get(key execute.Value, defaultValue execute.Value) (execute.Value,
 }
 
 func (v *Map) Set(key execute.Value, value execute.Value) (execute.Value, error) {
-	hb, err := key.HashBytes()
+	h, err := v.hash(key)
 	if err != nil {
 		return nil, err
 	}
-	h := maphash.Bytes(v.seed, hb)
 	if _, ok := v.entries[h]; !ok {
 		v.entries[h] = []*mapEntry{}
 	}

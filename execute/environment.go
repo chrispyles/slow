@@ -55,6 +55,9 @@ func (e *Environment) Get(n string) (Value, error) {
 		}
 		return nil, errors.NewNameError(n)
 	}
+	if v == nil {
+		return nil, errors.NewValueError(fmt.Sprintf("variable %q is uninitialized", n))
+	}
 	return v, nil
 }
 
