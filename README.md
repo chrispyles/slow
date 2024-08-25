@@ -164,6 +164,12 @@ foo.bar
 foo.baz()
 ```
 
+Fields can also be reassigned using dot notation:
+
+```
+foo.bar = 1
+```
+
 ### Operators
 
 #### Binary Operators
