@@ -83,6 +83,10 @@ func (v *Func) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Func) HasAttribute(a string) bool {
+	return false
+}
+
 func (v *Func) HashBytes() ([]byte, error) {
 	return nil, errors.UnhashableTypeError(v.Type())
 }
@@ -90,6 +94,11 @@ func (v *Func) HashBytes() ([]byte, error) {
 func (v *Func) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
 }
+
+func (v *Func) SetAttribute(a string, _ execute.Value) error {
+	return errors.NewAttributeError(v.Type(), a)
+}
+
 func (v *Func) String() string {
 	return fmt.Sprintf("<function %s>", v.name)
 }

@@ -225,15 +225,22 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 	}
 	if c == "=" {
 		// This is a variable assignment
-		varNode, ok := val.(*VariableNode)
-		if !ok {
+		varNode, isVar := val.(*VariableNode)
+		attrNode, isAttr := val.(*AttributeNode)
+		if !isVar && !isAttr {
 			return nil, errors.NewSyntaxError(buf, "cannot assign to non-symbol", "")
 		}
 		right, err := parseExpressionStart(buf)
 		if err != nil {
 			return nil, err
 		}
-		return &AssignmentNode{Left: varNode.Name, Right: right}, nil
+		var at assignmentTarget
+		if isVar {
+			at = assignmentTarget{variable: varNode.Name}
+		} else {
+			at = assignmentTarget{attribute: attrNode}
+		}
+		return &AssignmentNode{Left: at, Right: right}, nil
 	}
 	if c == "(" {
 		// This is a function call

@@ -9,8 +9,13 @@ import (
 // -------------------------------------------------------------------------------------------------
 // Assignment node
 
+type assignmentTarget struct {
+	variable  string
+	attribute *AttributeNode
+}
+
 type AssignmentNode struct {
-	Left  string // TODO: this does not handle attribute assignments
+	Left  assignmentTarget // TODO: this does not handle attribute assignments
 	Right execute.Expression
 }
 
@@ -19,7 +24,21 @@ func (n *AssignmentNode) Execute(e *execute.Environment) (execute.Value, error) 
 	if err != nil {
 		return nil, err
 	}
-	return e.Set(n.Left, expr)
+	if n := n.Left.variable; n != "" {
+		return e.Set(n, expr)
+	}
+	if an := n.Left.attribute; an != nil {
+		val, err := an.Left.Execute(e)
+		if err != nil {
+			return nil, err
+		}
+		err = val.SetAttribute(an.Right, expr)
+		if err != nil {
+			return nil, err
+		}
+		return expr, nil
+	}
+	panic("unhandled target case in AssignmentNode.Execute")
 }
 
 // -------------------------------------------------------------------------------------------------

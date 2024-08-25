@@ -121,12 +121,24 @@ func (v *Map) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Map) HasAttribute(a string) bool {
+	_, ok := mapMethods[a]
+	return ok
+}
+
 func (v *Map) HashBytes() ([]byte, error) {
 	return nil, errors.UnhashableTypeError(v.Type())
 }
 
 func (v *Map) Length() (uint64, error) {
 	return v.size, nil
+}
+
+func (v *Map) SetAttribute(a string, _ execute.Value) error {
+	if v.HasAttribute(a) {
+		return errors.AssignmentError(v.Type(), a)
+	}
+	return errors.NewAttributeError(v.Type(), a)
 }
 
 func (v *Map) String() string {

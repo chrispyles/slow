@@ -36,6 +36,10 @@ func (v *Module) GetAttribute(a string) (execute.Value, error) {
 	return v.env.Get(a)
 }
 
+func (v *Module) HasAttribute(a string) bool {
+	return v.env.Has(a)
+}
+
 func (v *Module) HashBytes() ([]byte, error) {
 	return nil, errors.UnhashableTypeError(v.Type())
 }
@@ -43,6 +47,14 @@ func (v *Module) HashBytes() ([]byte, error) {
 func (v *Module) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
 }
+
+func (v *Module) SetAttribute(a string, _ execute.Value) error {
+	if v.HasAttribute(a) {
+		return errors.AssignmentError(v.Type(), a)
+	}
+	return errors.NewAttributeError(v.Type(), a)
+}
+
 func (v *Module) String() string {
 	return fmt.Sprintf("<module %s>", v.name)
 }

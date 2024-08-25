@@ -10,6 +10,7 @@ import (
 )
 
 var allowTypesUnexported = cmp.AllowUnexported(
+	assignmentTarget{},
 	operators.BinaryOperator{},
 	operators.UnaryOperator{},
 	types.Bool{},
@@ -248,7 +249,7 @@ for x in range(1, 20) {
 								},
 								ElseBody: execute.Block{
 									&AssignmentNode{
-										Left: "x",
+										Left: assignmentTarget{variable: "x"},
 										Right: &BinaryOpNode{
 											Op: operators.BinOp_PLUS,
 											Left: &BinaryOpNode{

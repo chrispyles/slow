@@ -61,6 +61,11 @@ func (e *Environment) Get(n string) (Value, error) {
 	return v, nil
 }
 
+func (e *Environment) Has(n string) bool {
+	_, ok := e.values[n]
+	return ok
+}
+
 func (e *Environment) NewFrame() *Environment {
 	c := NewEnvironment()
 	c.parent = e

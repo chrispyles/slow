@@ -46,6 +46,10 @@ func (v *Float) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Float) HasAttribute(a string) bool {
+	return false
+}
+
 func (v *Float) HashBytes() ([]byte, error) {
 	return numToBytes(v.value), nil
 }
@@ -58,6 +62,10 @@ func (v *Float) Length() (uint64, error) {
 // 1.0 but true for 1.1).
 func (v *Float) HasRemainder() bool {
 	return v.value != math.Trunc(v.value)
+}
+
+func (v *Float) SetAttribute(a string, _ execute.Value) error {
+	return errors.NewAttributeError(v.Type(), a)
 }
 
 func (v *Float) String() string {

@@ -45,12 +45,20 @@ func (v *Str) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Str) HasAttribute(a string) bool {
+	return false
+}
+
 func (v *Str) HashBytes() ([]byte, error) {
 	return []byte(v.value), nil
 }
 
 func (v *Str) Length() (uint64, error) {
 	return uint64(len(v.value)), nil
+}
+
+func (v *Str) SetAttribute(a string, _ execute.Value) error {
+	return errors.NewAttributeError(v.Type(), a)
 }
 
 func (v *Str) String() string {

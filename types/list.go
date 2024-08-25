@@ -50,12 +50,24 @@ func (v *List) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *List) HasAttribute(a string) bool {
+	_, ok := listMethods[a]
+	return ok
+}
+
 func (v *List) HashBytes() ([]byte, error) {
 	return nil, errors.UnhashableTypeError(v.Type())
 }
 
 func (v *List) Length() (uint64, error) {
 	return uint64(len(v.values)), nil
+}
+
+func (v *List) SetAttribute(a string, _ execute.Value) error {
+	if v.HasAttribute(a) {
+		return errors.AssignmentError(v.Type(), a)
+	}
+	return errors.NewAttributeError(v.Type(), a)
 }
 
 func (v *List) String() string {

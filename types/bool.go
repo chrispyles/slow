@@ -54,6 +54,10 @@ func (v *Bool) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Bool) HasAttribute(a string) bool {
+	return false
+}
+
 func (v *Bool) HashBytes() ([]byte, error) {
 	if v.value {
 		return []byte{0x01}, nil
@@ -63,6 +67,10 @@ func (v *Bool) HashBytes() ([]byte, error) {
 
 func (v *Bool) Length() (uint64, error) {
 	return 0, errors.NoLengthError(v.Type())
+}
+
+func (v *Bool) SetAttribute(a string, _ execute.Value) error {
+	return errors.NewAttributeError(v.Type(), a)
 }
 
 func (v *Bool) String() string {
