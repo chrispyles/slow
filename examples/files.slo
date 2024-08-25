@@ -4,19 +4,28 @@ func readCsv(path) {
   var rows = []
   var currRow = []
   var currValue = ""
+  var trailingNewline = false
   for c in fs.read(path) {
+    trailingNewline = false
     if c == "\n" {
+      currRow.append(currValue)
       rows.append(currRow)
       currRow = []
+      currValue = ""
+      trailingNewline = true
     }
     else if c == "," {
       currRow.append(currValue)
+      currValue = ""
     }
     else {
       currValue += c
     }
   }
-  # TODO: this doesn't handle the case when there isn't a trailing newline in the file
+  if !trailingNewline {
+    currRow.append(currValue)
+    rows.append(currRow)
+  }
   return rows
 }
 

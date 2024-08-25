@@ -221,6 +221,9 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err != nil {
 			return nil, err
 		}
+		if buf.Current() == "\n" {
+			return expr, nil
+		}
 		return parseExpression(buf, expr)
 	}
 	if c == "=" {
@@ -641,6 +644,15 @@ func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expr
 	if err != nil {
 		return nil, err
 	}
+	var node execute.Expression
+	if binop, ok := expr.(*BinaryOpNode); ok {
+		// Unary operators take precedence over binary operators, so push the unary operation down.
+		unop := &UnaryOpNode{Op: op, Expr: binop.Left}
+		binop.Left = unop
+		node = binop
+	} else {
+		node = &UnaryOpNode{Op: op, Expr: expr}
+	}
 	if wantClosingParen {
 		expectClose(buf, ")") // remove ")" from the buffer
 	}
@@ -652,7 +664,7 @@ func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expr
 			return nil, errors.NewSyntaxError(buf, "cannot reassign literal value", "")
 		}
 	}
-	return &UnaryOpNode{Op: op, Expr: expr}, nil
+	return node, nil
 }
 
 func parseVar(buf *Buffer) (execute.Expression, error) {
