@@ -2,37 +2,27 @@ package errors
 
 import "fmt"
 
-type SyntaxError struct {
-	message     string
-	symbol      string
-	lineNumber  int
-	interpreter bool
-}
-
-func NewSyntaxError(buf Buffer, message string, symbol string) *SyntaxError {
-	return &SyntaxError{message: message, symbol: symbol, lineNumber: buf.LineNumber()}
-}
-
-func UnexpectedSymbolError(buf Buffer, got, want string) *SyntaxError {
-	msg := "unexpected symbol"
-	if want != "" {
-		msg = fmt.Sprintf("unexpected symbol, expected %q", want)
-	}
-	return NewSyntaxError(buf, msg, got)
-}
-
-func InterpreterSyntaxError(msg string) *SyntaxError {
-	return &SyntaxError{message: msg, interpreter: true}
-}
-
-func (e *SyntaxError) Error() string {
+func NewSyntaxError(buf Buffer, message string, symbol string) error {
 	var end string
-	if e.symbol != "" {
-		end = fmt.Sprintf(": %q", e.symbol)
+	if symbol != "" {
+		end = fmt.Sprintf(": %q", symbol)
 	}
-	var line string
-	if !e.interpreter {
-		line = fmt.Sprintf(" on line %d", e.lineNumber)
+	return newError("SyntaxError", fmt.Sprintf("%s on line %d%s", message, buf.LineNumber(), end))
+}
+
+func UnexpectedSymbolError(buf Buffer, got, want string) error {
+	var msg string
+	if want != "" {
+		msg = fmt.Sprintf("unexpected symbol, expected %q on line %d", want, buf.LineNumber())
+	} else {
+		msg = fmt.Sprintf("unexpected symbol on line %d", buf.LineNumber())
 	}
-	return fmt.Sprintf("SyntaxError%s: %s%s", line, e.message, end)
+	if got != "" {
+		msg += fmt.Sprintf(": %q", got)
+	}
+	return newError("SyntaxError", msg)
+}
+
+func InterpreterSyntaxError(msg string) error {
+	return newError("SyntaxError", msg)
 }

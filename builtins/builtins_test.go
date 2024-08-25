@@ -11,14 +11,7 @@ import (
 )
 
 var allowUnexported = cmp.AllowUnexported(
-	errors.AttributeError{},
-	errors.DeclarationError{},
-	errors.EOFError{},
-	errors.IndexError{},
-	errors.NameError{},
-	errors.SyntaxError{},
-	errors.TypeError{},
-
+	errors.SlowError{},
 	types.Bool{},
 	types.Float{},
 	types.Func{},

@@ -1,15 +1,5 @@
 package errors
 
-import "fmt"
-
-type RuntimeError struct {
-	msg string
-}
-
-func NewRuntimeError(msg string) *RuntimeError {
-	return &RuntimeError{msg}
-}
-
-func (e *RuntimeError) Error() string {
-	return fmt.Sprintf("RuntimeError: %s", e.msg)
+func NewRuntimeError(msg string) error {
+	return newError("RuntimeError", msg)
 }
