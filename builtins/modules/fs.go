@@ -35,7 +35,7 @@ func fs_readBytes(args ...execute.Value) (execute.Value, error) {
 	}
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err // TODO: wrap error
+		return nil, errors.WrapFileError(err, path)
 	}
 	return types.NewBytes(bytes), nil
 }

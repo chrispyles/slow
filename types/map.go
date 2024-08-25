@@ -108,7 +108,7 @@ func (v *Map) CompareTo(o execute.Value) (int, bool) {
 
 func (v *Map) Equals(o execute.Value) bool {
 	if l2, ok := o.(*Map); ok {
-		// TODO: is it possible to get to *Map pointers that represent the same map in the Slow environment?
+		// TODO: is it possible to get two *Map pointers that represent the same map in the Slow environment?
 		return v == l2
 	}
 	return false

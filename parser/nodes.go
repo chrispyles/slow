@@ -15,7 +15,7 @@ type assignmentTarget struct {
 }
 
 type AssignmentNode struct {
-	Left  assignmentTarget // TODO: this does not handle attribute assignments
+	Left  assignmentTarget
 	Right execute.Expression
 }
 
@@ -84,8 +84,14 @@ func (n *BinaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 		case *VariableNode:
 			return e.Set(left.Name, val)
 		case *AttributeNode:
-			// TODO
-			return nil, nil
+			expr, err := left.Left.Execute(e)
+			if err != nil {
+				return nil, err
+			}
+			if err := expr.SetAttribute(left.Right, val); err != nil {
+				return nil, err
+			}
+			return val, nil
 		default:
 			panic("unexpected node type in reassignment operator")
 		}
@@ -380,8 +386,14 @@ func (n *UnaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 			}
 			return operand, nil
 		case *AttributeNode:
-			// TODO
-			return nil, nil
+			lVal, err := expr.Left.Execute(e)
+			if err != nil {
+				return nil, err
+			}
+			if err := lVal.SetAttribute(expr.Right, val); err != nil {
+				return nil, err
+			}
+			return val, nil
 		default:
 			panic("unexpected node type in reassignment operator")
 		}

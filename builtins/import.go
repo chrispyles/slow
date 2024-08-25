@@ -18,7 +18,6 @@ func importImpl(args ...execute.Value) (execute.Value, error) {
 	if _, ok := args[0].(*types.Str); !ok {
 		return nil, errors.NewTypeError(args[0].Type(), types.StrType)
 	}
-	// TODO: relative imports
 	name, err := args[0].ToStr()
 	if err != nil {
 		return nil, err
@@ -40,7 +39,7 @@ func importImpl(args ...execute.Value) (execute.Value, error) {
 func importFile(path string) (execute.Value, error) {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err // TODO: wrap error
+		return nil, errors.WrapFileError(err, path)
 	}
 	env := RootEnvironment.NewFrame()
 	eval.Eval(string(bytes), env, false)

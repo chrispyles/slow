@@ -74,11 +74,13 @@ func (v *Str) ToCallable() (execute.Callable, error) {
 }
 
 func (v *Str) ToFloat() (float64, error) {
-	return strconv.ParseFloat(v.value, 64) // TODO: wrap error
+	vf, err := strconv.ParseFloat(v.value, 64)
+	return vf, errors.WrapValueError(v.value, FloatType, err)
 }
 
 func (v *Str) ToInt() (int64, error) {
-	return strconv.ParseInt(v.value, 10, 64) // TODO: wrap error
+	vi, err := strconv.ParseInt(v.value, 10, 64)
+	return vi, errors.WrapValueError(v.value, IntType, err)
 }
 
 func (v *Str) ToIterator() (execute.Iterator, error) {
@@ -90,7 +92,8 @@ func (v *Str) ToStr() (string, error) {
 }
 
 func (v *Str) ToUint() (uint64, error) {
-	return strconv.ParseUint(v.value, 10, 64) // TODO: wrap error
+	vu, err := strconv.ParseUint(v.value, 10, 64)
+	return vu, errors.WrapValueError(v.value, UintType, err)
 }
 
 func (v *Str) Type() execute.Type {
