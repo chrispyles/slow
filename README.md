@@ -223,7 +223,7 @@ Each of the arithmetic operators has a reassignment variant that reassigns its l
 1
 ```
 
-The left operand of a reassignment oeprators may only be an already-declared variable, an object field, or an [index](#list-indexing).
+The left operand of a reassignment oeprators may only be an already-declared variable, an object field, or an [index](#indexing).
 
 Slow supports the following logical operators:
 
@@ -438,6 +438,8 @@ String characters can be accessed used zero-indexed integers. Indexing returns a
 "f"
 ```
 
+Because strings are immutable, index assignments are not supported.
+
 #### Bytes Indexing
 
 Individual bytes can be accessed used zero-indexed integers. Indexing returns a single-byte `bytes`.
@@ -450,6 +452,8 @@ Individual bytes can be accessed used zero-indexed integers. Indexing returns a 
 -> b[-1]
 0xEF
 ```
+
+Because `bytes` are immutable, index assignments are not supported.
 
 #### List Indexing
 
@@ -466,6 +470,8 @@ List elements can also be updated using indexing:
 
 ```
 l[0] = 3
+l[1] += 1
+++l[2]
 ```
 
 To look up an element beginning at the end of the `list`, use a negative index. The index of the last element is `-1`, the second to last is `-2`, etc.
