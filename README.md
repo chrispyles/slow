@@ -421,7 +421,9 @@ The provided key must be of a hashable type.
 
 Slow supports indexing with square bracket syntax. All indexable types in Slow are zero-indexed.
 
-For all indexable types except `map`s, only a `bool`, `uint`, or `int` may be used, and under the hood indexes are coerced to Go's `int` type (not `int64`, which is how Slow `int`s are stored). This means it is possible to overflow the range of possible index values if you use a `uint` that's too large. `map`s can be indexed with any hashable value.
+For all indexable types except `map`s, only a `bool`, `uint`, or `int` may be used as an index. These types also support negative indexing to retrieve elements beginning at the end of the sequence. The index of the last element is `-1`, the second to last is `-2`, etc. `map`s can be indexed with any hashable value.
+
+Note that under the hood, numeric indexes (excluding `map`s) are coerced to Go's `int` type (not `int64`, which is how Slow `int`s are stored). This means it is possible to overflow the range of possible index values if you use a `uint` that's too large. 
 
 Any time an indexable value is indexed with an out-of-bounds or nonexistent index, an `IndexError` is thrown.
 
@@ -474,7 +476,6 @@ l[1] += 1
 ++l[2]
 ```
 
-To look up an element beginning at the end of the `list`, use a negative index. The index of the last element is `-1`, the second to last is `-2`, etc.
 
 ```
 -> var l = [1, 2, 3, 4, 5]
