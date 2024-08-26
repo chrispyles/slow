@@ -46,6 +46,14 @@ func (v *Float) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Float) GetIndex(execute.Value) (execute.Value, error) {
+	return nil, errors.IndexingNotSupported(v.Type())
+}
+
+func (v *Float) SetIndex(execute.Value, execute.Value) error {
+	return errors.IndexingNotSupported(v.Type())
+}
+
 func (v *Float) HasAttribute(a string) bool {
 	return false
 }

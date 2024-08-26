@@ -12,6 +12,7 @@ import (
 type assignmentTarget struct {
 	variable  string
 	attribute *AttributeNode
+	index     *IndexNode
 }
 
 type AssignmentNode struct {
@@ -37,6 +38,20 @@ func (n *AssignmentNode) Execute(e *execute.Environment) (execute.Value, error) 
 			return nil, err
 		}
 		return expr, nil
+	}
+	if in := n.Left.index; in != nil {
+		val, err := in.Container.Execute(e)
+		if err != nil {
+			return nil, err
+		}
+		idx, err := in.Index.Execute(e)
+		if err != nil {
+			return nil, err
+		}
+		if err := val.SetIndex(idx, expr); err != nil {
+			return nil, err
+		}
+		return val, nil
 	}
 	panic("unhandled target case in AssignmentNode.Execute")
 }
@@ -89,6 +104,19 @@ func (n *BinaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 				return nil, err
 			}
 			if err := expr.SetAttribute(left.Right, val); err != nil {
+				return nil, err
+			}
+			return val, nil
+		case *IndexNode:
+			expr, err := left.Container.Execute(e)
+			if err != nil {
+				return nil, err
+			}
+			idx, err := left.Index.Execute(e)
+			if err != nil {
+				return nil, err
+			}
+			if err := expr.SetIndex(idx, val); err != nil {
 				return nil, err
 			}
 			return val, nil
@@ -260,6 +288,26 @@ func (n *IfNode) Execute(e *execute.Environment) (execute.Value, error) {
 }
 
 // -------------------------------------------------------------------------------------------------
+// Index node
+
+type IndexNode struct {
+	Container execute.Expression
+	Index     execute.Expression
+}
+
+func (n *IndexNode) Execute(e *execute.Environment) (execute.Value, error) {
+	container, err := n.Container.Execute(e)
+	if err != nil {
+		return nil, err
+	}
+	index, err := n.Index.Execute(e)
+	if err != nil {
+		return nil, err
+	}
+	return container.GetIndex(index)
+}
+
+// -------------------------------------------------------------------------------------------------
 // List node
 
 type ListNode struct {
@@ -393,7 +441,20 @@ func (n *UnaryOpNode) Execute(e *execute.Environment) (execute.Value, error) {
 			if err := lVal.SetAttribute(expr.Right, val); err != nil {
 				return nil, err
 			}
-			return val, nil
+			return operand, nil
+		case *IndexNode:
+			lVal, err := expr.Container.Execute(e)
+			if err != nil {
+				return nil, err
+			}
+			idx, err := expr.Index.Execute(e)
+			if err != nil {
+				return nil, err
+			}
+			if err := lVal.SetIndex(idx, val); err != nil {
+				return nil, err
+			}
+			return operand, nil
 		default:
 			panic("unexpected node type in reassignment operator")
 		}

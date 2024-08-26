@@ -230,7 +230,8 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		// This is a variable assignment
 		varNode, isVar := val.(*VariableNode)
 		attrNode, isAttr := val.(*AttributeNode)
-		if !isVar && !isAttr {
+		idxNode, isIdx := val.(*IndexNode)
+		if !isVar && !isAttr && !isIdx {
 			return nil, errors.NewSyntaxError(buf, "cannot assign to non-symbol", "")
 		}
 		right, err := parseExpressionStart(buf)
@@ -240,8 +241,10 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		var at assignmentTarget
 		if isVar {
 			at = assignmentTarget{variable: varNode.Name}
-		} else {
+		} else if isAttr {
 			at = assignmentTarget{attribute: attrNode}
+		} else {
+			at = assignmentTarget{index: idxNode}
 		}
 		return &AssignmentNode{Left: at, Right: right}, nil
 	}
@@ -254,8 +257,18 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		return contExpressionParsing(buf, &CallNode{Func: val, Args: args})
 	}
 	if c == "[" {
-		// TODO: indexing
-		return nil, nil
+		indexExpr, err := parseExpressionStart(buf)
+		if err != nil {
+			return nil, err
+		}
+		if err := expectClose(buf, "]"); err != nil {
+			return nil, err
+		}
+		expr := &IndexNode{Container: val, Index: indexExpr}
+		if buf.Current() == "\n" {
+			return expr, nil
+		}
+		return parseExpression(buf, expr)
 	}
 	return nil, errors.UnexpectedSymbolError(buf, c, "")
 }
@@ -401,7 +414,8 @@ func parseBinaryOperation(buf *Buffer, op *operators.BinaryOperator, left execut
 		// Ensure that the left operand is assignable if the operator is a reassignment operator.
 		_, isVar := left.(*VariableNode)
 		_, isAttr := left.(*AttributeNode)
-		if !isVar && !isAttr {
+		_, isIdx := left.(*IndexNode)
+		if !isVar && !isAttr && !isIdx {
 			return nil, errors.NewSyntaxError(buf, "cannot reassign literal value", "")
 		}
 	}
@@ -660,7 +674,8 @@ func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expr
 		// Ensure that the left operand is assignable if the operator is a reassignment operator.
 		_, isVar := expr.(*VariableNode)
 		_, isAttr := expr.(*AttributeNode)
-		if !isVar && !isAttr {
+		_, isIdx := expr.(*IndexNode)
+		if !isVar && !isAttr && !isIdx {
 			return nil, errors.NewSyntaxError(buf, "cannot reassign literal value", "")
 		}
 	}

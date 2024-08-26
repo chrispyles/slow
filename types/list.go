@@ -50,6 +50,18 @@ func (v *List) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *List) GetIndex(i execute.Value) (execute.Value, error) {
+	idx, err := numericIndex(i, v.Type())
+	if err != nil {
+		return nil, err
+	}
+	idx, ok := normalizeIndex(idx, len(v.values))
+	if !ok {
+		return nil, errors.NewIndexError(fmt.Sprintf("%d", idx))
+	}
+	return v.values[idx], nil
+}
+
 func (v *List) HasAttribute(a string) bool {
 	_, ok := listMethods[a]
 	return ok
@@ -68,6 +80,19 @@ func (v *List) SetAttribute(a string, _ execute.Value) error {
 		return errors.AssignmentError(v.Type(), a)
 	}
 	return errors.NewAttributeError(v.Type(), a)
+}
+
+func (v *List) SetIndex(i execute.Value, val execute.Value) error {
+	idx, err := numericIndex(i, v.Type())
+	if err != nil {
+		return err
+	}
+	idx, ok := normalizeIndex(idx, len(v.values))
+	if !ok {
+		return errors.NewIndexError(fmt.Sprintf("%d", idx))
+	}
+	v.values[idx] = val
+	return nil
 }
 
 func (v *List) String() string {

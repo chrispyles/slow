@@ -41,6 +41,18 @@ func (v *Bytes) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Bytes) GetIndex(i execute.Value) (execute.Value, error) {
+	idx, err := numericIndex(i, v.Type())
+	if err != nil {
+		return nil, err
+	}
+	idx, ok := normalizeIndex(idx, len(v.value))
+	if !ok {
+		return nil, errors.NewIndexError(fmt.Sprintf("%d", idx))
+	}
+	return NewBytes([]byte{v.value[idx]}), nil
+}
+
 func (v *Bytes) HasAttribute(a string) bool {
 	return false
 }
@@ -55,6 +67,10 @@ func (v *Bytes) Length() (uint64, error) {
 
 func (v *Bytes) SetAttribute(a string, _ execute.Value) error {
 	return errors.NewAttributeError(v.Type(), a)
+}
+
+func (v *Bytes) SetIndex(execute.Value, execute.Value) error {
+	return errors.SetIndexNotSupported(v.Type())
 }
 
 func (v *Bytes) String() string {

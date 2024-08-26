@@ -42,10 +42,12 @@ type Value interface {
 	// int(1) != float(1) for the purposes of this method).
 	Equals(Value) bool
 	GetAttribute(string) (Value, error)
+	GetIndex(Value) (Value, error)
 	HasAttribute(string) bool
 	HashBytes() ([]byte, error)
 	Length() (uint64, error)
 	SetAttribute(string, Value) error
+	SetIndex(Value, Value) error
 	// String returns the formatted representation of the value, like __repr__ in Python.
 	String() string
 	ToBool() bool

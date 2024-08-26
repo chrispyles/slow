@@ -86,6 +86,37 @@ kangaroo
 jump
 ```
 
+String characters can be accessed used zero-indexed integers. Indexing returns a single-character `str`.
+
+```
+-> var s = "abcdef"
+"abcdef"
+-> s[0]
+"a"
+-> s[-1]
+"f"
+```
+
+#### Bytes
+
+Bytes are written as case-insensitive hexadecimal values prefixed with `0x` (for example, `0xDEADBEEF`). There must be an even number of characters in a `bytes` literal.
+
+```
+-> var b = 0xdeadbeef
+0xDEADBEEF
+```
+
+Individual bytes can be accessed used zero-indexed integers. Indexing returns a single-byte `bytes`.
+
+```
+-> var b = 0xDEADBEEF
+0xDEADBEEF
+-> b[0]
+0xDE
+-> b[-1]
+0xEF
+```
+
 ### Statements
 
 Statements in Slow are delimited by newlines. Slow ignores indentation. Comments are preceded with the `#` character, after which everything on that line is ignored.
@@ -321,13 +352,32 @@ l = [1, 2, 3]
 
 #### List Indexing
 
-Lists are zero-indexed. To retrieve the element of a list at a particular index, use square brackets:
+Lists are zero-indexed. To retrieve the element of a `list` at a particular index, use square brackets:
 
 ```
 -> var l = [1, 2]
 [1, 2]
 -> l[1]
 2
+```
+
+Note that when indexing a `list`, only a `bool`, `uint`, or `int` may be used, and under the hood indexes are coerced to Go's `int` type (not `int64`, which is how Slow `int`s are stored). This means it is possible to overflow the range of possible index values if you use a `uint` that's too large.
+
+List elements can also be updated using indexing:
+
+```
+l[0] = 3
+```
+
+To look up an element beginning at the end of the `list`, use a negative index. The index of the last element is `-1`, the second to last is `-2`, etc.
+
+```
+-> var l = [1, 2, 3, 4, 5]
+[1, 2, 3, 4, 5]
+-> l[-1]
+5
+-> l[-2]
+4
 ```
 
 #### List Methods
@@ -378,6 +428,27 @@ m = {1: 2, 3: 4, true: 1, "foo": "bar"}
 ```
 
 Only hashable types may be used as `map` keys; the only types that are currently hashable are primitives. Any type may be used as a value in a `map`.
+
+#### Map Indexing
+
+Map values can be retrieved or updated using indexing. To retrieve the element of a `map` key, use square brackets:
+
+```
+-> var m = {1: 2, 2: 4}
+{1: 2, 2: 4}
+-> m[1]
+2
+-> m[1] = 3
+{1: 3, 2: 4}
+-> ++m[2]
+4
+-> m
+{1: 3, 2: 5}
+-> m[3] = 6
+6
+-> m
+{1: 3, 2: 5, 3: 6}
+```
 
 #### Map Methods
 
@@ -722,8 +793,6 @@ fs.readBytes("foo.txt")
 ### Generators
 
 ### List Slicing
-
-### Map Indexing
 
 ### Classes
 

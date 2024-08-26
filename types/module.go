@@ -36,6 +36,10 @@ func (v *Module) GetAttribute(a string) (execute.Value, error) {
 	return v.env.Get(a)
 }
 
+func (v *Module) GetIndex(execute.Value) (execute.Value, error) {
+	return nil, errors.IndexingNotSupported(v.Type())
+}
+
 func (v *Module) HasAttribute(a string) bool {
 	return v.env.Has(a)
 }
@@ -53,6 +57,10 @@ func (v *Module) SetAttribute(a string, _ execute.Value) error {
 		return errors.AssignmentError(v.Type(), a)
 	}
 	return errors.NewAttributeError(v.Type(), a)
+}
+
+func (v *Module) SetIndex(execute.Value, execute.Value) error {
+	return errors.IndexingNotSupported(v.Type())
 }
 
 func (v *Module) String() string {

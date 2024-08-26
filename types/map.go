@@ -76,6 +76,21 @@ func (v *Map) Get(key execute.Value, defaultValue execute.Value) (execute.Value,
 	return nil, errors.NewKeyError(key.String())
 }
 
+func (v *Map) Has(key execute.Value) (bool, error) {
+	h, err := v.hash(key)
+	if err != nil {
+		return false, err
+	}
+	if es, ok := v.entries[h]; ok {
+		for _, e := range es {
+			if key.Equals(e.key) {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
 func (v *Map) Set(key execute.Value, value execute.Value) (execute.Value, error) {
 	h, err := v.hash(key)
 	if err != nil {
@@ -121,6 +136,10 @@ func (v *Map) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Map) GetIndex(i execute.Value) (execute.Value, error) {
+	return v.Get(i, nil)
+}
+
 func (v *Map) HasAttribute(a string) bool {
 	_, ok := mapMethods[a]
 	return ok
@@ -139,6 +158,11 @@ func (v *Map) SetAttribute(a string, _ execute.Value) error {
 		return errors.AssignmentError(v.Type(), a)
 	}
 	return errors.NewAttributeError(v.Type(), a)
+}
+
+func (v *Map) SetIndex(i execute.Value, val execute.Value) error {
+	_, err := v.Set(i, val)
+	return err
 }
 
 func (v *Map) String() string {

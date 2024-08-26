@@ -66,6 +66,10 @@ func (m *MockValue) GetAttribute(a string) (execute.Value, error) {
 	return ret, nil
 }
 
+func (m *MockValue) GetIndex(execute.Value) (execute.Value, error) {
+	return nil, nil
+}
+
 func (m *MockValue) HasAttribute(a string) bool {
 	return false
 }
@@ -79,6 +83,10 @@ func (m *MockValue) Length() (uint64, error) {
 }
 
 func (m *MockValue) SetAttribute(string, execute.Value) error {
+	return nil
+}
+
+func (m *MockValue) SetIndex(execute.Value, execute.Value) error {
 	return nil
 }
 

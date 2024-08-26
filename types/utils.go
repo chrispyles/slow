@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"math"
 
+	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
 )
 
@@ -54,6 +55,33 @@ func numToBytes[T float64 | int64 | uint64](v T) []byte {
 	var buf [8]byte
 	binary.BigEndian.AppendUint64(buf[:], u)
 	return buf[:]
+}
+
+func numericIndex(v execute.Value, t errors.Type) (int, error) {
+	var ret int
+	if vu, ok := v.(*Uint); ok {
+		ret = int(vu.value)
+	} else if vi, ok := v.(*Int); ok {
+		ret = int(vi.value)
+	} else if vb, ok := v.(*Bool); ok {
+		ret = int(must(vb.ToInt()))
+	} else {
+		return 0, errors.NonNumericIndexError(v.Type(), t)
+	}
+	return ret, nil
+}
+
+// normalizeIndex converts a possible-negative index value to a positive index value. If the index
+// is out-of-bounds based on the provided container length, the index is returned unchanged and the
+// second return value is false.
+func normalizeIndex(idx, cLen int) (int, bool) {
+	if idx >= cLen || idx < -1*cLen {
+		return idx, false
+	}
+	if idx >= 0 {
+		return idx, true
+	}
+	return cLen + idx, true
 }
 
 func must[T any](v T, err error) T {

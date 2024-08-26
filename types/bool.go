@@ -54,6 +54,10 @@ func (v *Bool) GetAttribute(a string) (execute.Value, error) {
 	return nil, errors.NewAttributeError(v.Type(), a)
 }
 
+func (v *Bool) GetIndex(execute.Value) (execute.Value, error) {
+	return nil, errors.IndexingNotSupported(v.Type())
+}
+
 func (v *Bool) HasAttribute(a string) bool {
 	return false
 }
@@ -71,6 +75,10 @@ func (v *Bool) Length() (uint64, error) {
 
 func (v *Bool) SetAttribute(a string, _ execute.Value) error {
 	return errors.NewAttributeError(v.Type(), a)
+}
+
+func (v *Bool) SetIndex(execute.Value, execute.Value) error {
+	return errors.IndexingNotSupported(v.Type())
 }
 
 func (v *Bool) String() string {
