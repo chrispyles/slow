@@ -65,3 +65,21 @@ func TestNoLengthError(t *testing.T) {
 		t.Errorf("Error() returned incorrect value: got %q, want %q", got, want)
 	}
 }
+
+func TestUnhashableTypeError(t *testing.T) {
+	e := errors.UnhashableTypeError(slowtesting.NewMockType())
+
+	got, want := e.Error(), "TypeError: type \"MockType\" is not hashable"
+	if got != want {
+		t.Errorf("Error() returned incorrect value: got %q, want %q", got, want)
+	}
+}
+
+func TestTypeErrorFromMessage(t *testing.T) {
+	e := errors.TypeErrorFromMessage("foo")
+
+	got, want := e.Error(), "TypeError: foo"
+	if got != want {
+		t.Errorf("Error() returned incorrect value: got %q, want %q", got, want)
+	}
+}

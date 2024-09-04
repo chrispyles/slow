@@ -42,3 +42,12 @@ func TestUnexpectedSymbolError(t *testing.T) {
 		t.Errorf("Error() returned incorrect value: got %q, want %q", got, want)
 	}
 }
+
+func TestInterpreterSyntaxError(t *testing.T) {
+	e := errors.InterpreterSyntaxError("foo")
+
+	got, want := e.Error(), "SyntaxError: foo"
+	if got != want {
+		t.Errorf("Error() returned incorrect value: got %q, want %q", got, want)
+	}
+}
