@@ -22,7 +22,7 @@ title: The Slow Programming Language
 email: cpyles@berkeley.edu
 description: >-
   Documentation for the Slow programming language.
-baseurl: "/docs/" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 domain: "slowlang.dev"
 url: "https://slowlang.dev" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  chrispyles
