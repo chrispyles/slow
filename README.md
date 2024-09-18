@@ -1,11 +1,11 @@
 # The Slow Programming Language
 
+[![Run tests](https://github.com/chrispyles/slow/actions/workflows/run-tests.yml/badge.svg)](https://github.com/chrispyles/slow/actions/workflows/run-tests.yml)
+[![Coverage Status](https://coveralls.io/repos/github/chrispyles/slow/badge.svg?branch=main)](https://coveralls.io/github/chrispyles/slow?branch=main)
+
 <p align="center">
   <img src="logos/logo.png" width="256" alt="Slow logo">
 </p>
-
-[![Run tests](https://github.com/chrispyles/slow/actions/workflows/run-tests.yml/badge.svg)](https://github.com/chrispyles/slow/actions/workflows/run-tests.yml)
-[![Coverage Status](https://coveralls.io/repos/github/chrispyles/slow/badge.svg?branch=main)](https://coveralls.io/github/chrispyles/slow?branch=main)
 
 The Slow programming language is a dynamically-typed interpreted programming language implemented in Go.
 
