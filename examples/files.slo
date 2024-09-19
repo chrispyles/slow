@@ -29,4 +29,4 @@ func readCsv(path) {
   return rows
 }
 
-print(readCsv("data.csv"))
+print(readCsv("examples/data.csv"))

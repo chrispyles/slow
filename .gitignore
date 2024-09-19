@@ -7,3 +7,5 @@
 /prototypes
 /*.slo
 /coverage.*
+/.coverdata
+*.TODO

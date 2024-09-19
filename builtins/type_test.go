@@ -3,6 +3,7 @@ package builtins
 import (
 	"testing"
 
+	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/types"
 )
@@ -68,6 +69,12 @@ func TestBuiltins_type(t *testing.T) {
 			fn:   "type",
 			args: []execute.Value{types.NewUint(1)},
 			want: types.NewStr("uint"),
+		},
+		{
+			name:    "too_many_args",
+			fn:      "type",
+			args:    []execute.Value{types.NewInt(0), types.NewInt(1)},
+			wantErr: errors.CallError("type", 2, 1),
 		},
 	})
 }
