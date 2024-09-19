@@ -10,8 +10,8 @@ test:
 	go test -v ./...
 
 testcov:
-	go test -v -coverprofile=coverage.out ./...
+	go test -v -race -covermode atomic -coverprofile=profile.cov ./...
 	go tool covdata textfmt -i .coverdata -o coverage2.out
-	cat coverage2.out | tail -n +2 >> coverage.out
+	cat coverage2.out | tail -n +2 >> profile.cov
 	rm -r coverage2.out .coverdata
-	go tool cover -html=coverage.out -o=coverage.html
+	go tool cover -html=profile.cov -o=coverage.html
