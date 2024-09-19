@@ -679,6 +679,18 @@ Exiting with code 0
 Exiting with code 1
 ```
 
+If the argument passed to `exit` is not an integer, it is cast to an integer. If this cast succeeds, the integer value is used as the exit code. If the cast fails (i.e. if the argument is non-numeric), the argument is cast to a `bool` first, which is then case to an `int` (since all values can be cast to `bool`).
+
+```
+-> exit(2.1)
+Exiting with code 2
+```
+
+```
+-> exit([])  # lists are truthy, so bool([]) == true
+Exiting with code 1
+```
+
 ##### `import`
 
 The `import` function imports a module. It takes 1 argument, either a path to another Slow file (with extesnion `.slo`) or the name a of a built-in module (e.g. `fs`) and returns a [`module`](#modules). If the argument is a path, the file is read and executed, and the resulting global environment is converted to a `module`.

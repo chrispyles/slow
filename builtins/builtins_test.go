@@ -1,10 +1,13 @@
 package builtins
 
 import (
+	"fmt"
 	"testing"
+	"unsafe"
 
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/printer"
 	slowtesting "github.com/chrispyles/slow/testing"
 	"github.com/chrispyles/slow/types"
 	"github.com/google/go-cmp/cmp"
@@ -12,92 +15,55 @@ import (
 
 var allowUnexported = cmp.AllowUnexported(
 	errors.SlowError{},
+	execute.Environment{},
 	types.Bool{},
 	types.Float{},
 	types.Func{},
 	types.Int{},
 	types.Iterator{},
 	types.List{},
+	types.Module{},
 	types.Str{},
 	types.Uint{},
 )
 
-func TestBuiltins(t *testing.T) {
-	tests := []struct {
-		name         string
-		fn           string
-		args         []execute.Value
-		want         execute.Value
-		wantPrintlns []string
-		wantErr      error
-	}{
-		// TODO: exit
-		{
-			name: "len_success",
-			fn:   "len",
-			args: []execute.Value{&slowtesting.MockValue{LengthRet: 10}},
-			want: types.NewUint(10),
-		},
-		{
-			name: "len_err",
-			fn:   "len",
-			args: []execute.Value{&slowtesting.MockValue{
-				LengthErr: errors.NoLengthError(slowtesting.NewMockType()),
-			}},
-			wantErr: errors.NoLengthError(slowtesting.NewMockType()),
-		},
-		{
-			name:    "len_few_args",
-			fn:      "len",
-			args:    []execute.Value{},
-			wantErr: errors.CallError("len", 0, 1),
-		},
-		{
-			name: "len_many_args",
-			fn:   "len",
-			args: []execute.Value{
-				&slowtesting.MockValue{},
-				&slowtesting.MockValue{},
-			},
-			wantErr: errors.CallError("len", 2, 1),
-		},
-		{
-			name: "print_string",
-			fn:   "print",
-			args: []execute.Value{
-				types.NewStr("foo"),
-			},
-			want:         types.Null,
-			wantPrintlns: []string{"foo"},
-		},
-		{
-			name: "print_value",
-			fn:   "print",
-			args: []execute.Value{
-				&slowtesting.MockValue{StringRet: "MOCK_VALUE"},
-			},
-			want:         types.Null,
-			wantPrintlns: []string{"MOCK_VALUE"},
-		},
-		{
-			name: "print_many",
-			fn:   "print",
-			args: []execute.Value{
-				&slowtesting.MockValue{StringRet: "MV1"},
-				&slowtesting.MockValue{StringRet: "MV2"},
-				&slowtesting.MockValue{StringRet: "MV3"},
-			},
-			want:         types.Null,
-			wantPrintlns: []string{"MV1MV2MV3"},
-		},
-		// TODO: range
-	}
+// Adapted from https://github.com/google/go-cmp/issues/162
+var equateFuncs = cmp.Comparer(func(x, y types.FuncImpl) bool {
+	px := *(*unsafe.Pointer)(unsafe.Pointer(&x))
+	py := *(*unsafe.Pointer)(unsafe.Pointer(&y))
+	return px == py
+})
 
+type builtinTest struct {
+	name         string
+	fn           string
+	args         []execute.Value
+	makeMock     func() []any
+	cleanupMock  func()
+	want         execute.Value
+	wantPrintlns []string
+	wantCalls    []any
+	wantErr      error
+}
+
+func doBuiltinTest(t *testing.T, tests []builtinTest) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var printed []string
 			println = func(s string) {
 				printed = append(printed, s)
+			}
+			printlnf = func(s string, a ...any) {
+				printed = append(printed, fmt.Sprintf(s, a...))
+			}
+			t.Cleanup(func() {
+				println = printer.Println
+				printlnf = printer.Printlnf
+			})
+			var gotCalls []any
+			if tc.makeMock != nil {
+				gotCalls = tc.makeMock()
+				t.Cleanup(tc.cleanupMock)
 			}
 			env := RootEnvironment.NewFrame()
 			fn, err := env.Get(tc.fn)
@@ -112,73 +78,14 @@ func TestBuiltins(t *testing.T) {
 			if diff := cmp.Diff(tc.wantErr, err, allowUnexported); diff != "" {
 				t.Errorf("c.Call() returned incorrect error (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want, got, allowUnexported); diff != "" {
+			if diff := cmp.Diff(tc.want, got, allowUnexported, equateFuncs); diff != "" {
 				t.Errorf("c.Call() returned incorrect value (-want +got):\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.wantPrintlns, printed); diff != "" {
 				t.Errorf("println called incorrectly (-want +got):\n%s", diff)
 			}
-		})
-	}
-}
-
-func TestBuiltins_type(t *testing.T) {
-	tests := []struct {
-		value execute.Value
-		want  string
-	}{
-		{
-			types.NewBool(true),
-			"bool",
-		},
-		{
-			types.NewFloat(1),
-			"float",
-		},
-		{
-			types.NewFunc("", nil, nil),
-			"func",
-		},
-		{
-			types.NewGenerator(nil),
-			"generator",
-		},
-		{
-			types.NewInt(1),
-			"int",
-		},
-		{
-			types.NewList(nil),
-			"list",
-		},
-		{
-			types.NewMap(),
-			"map",
-		},
-		{
-			types.Null,
-			"null",
-		},
-		{
-			types.NewStr(""),
-			"str",
-		},
-		{
-			types.NewUint(1),
-			"uint",
-		},
-	}
-	for _, tc := range tests {
-		t.Run(tc.want, func(t *testing.T) {
-			env := RootEnvironment.NewFrame()
-			f, _ := env.Get("type")
-			c, _ := f.ToCallable()
-			gotv, err := c.Call(env, tc.value)
-			if err != nil {
-				t.Fatalf("c.Call() returned unexpected error: %v", err)
-			}
-			if got, _ := gotv.(*types.Str).ToStr(); got != tc.want {
-				t.Errorf("builtin type() returned %v, want %v", got, tc.want)
+			if diff := cmp.Diff(tc.wantCalls, gotCalls); diff != "" {
+				t.Errorf("mocked function called incorrectly (-want +got):\n%s", diff)
 			}
 		})
 	}

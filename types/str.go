@@ -16,6 +16,10 @@ func NewStr(v string) *Str {
 	return &Str{value: v}
 }
 
+func (v *Str) Value() string {
+	return v.value
+}
+
 func (v *Str) CloneIfPrimitive() execute.Value {
 	return NewStr(v.value)
 }

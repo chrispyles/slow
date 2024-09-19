@@ -11,17 +11,20 @@ import (
 	"github.com/chrispyles/slow/types"
 )
 
+var (
+	evalEval   = eval.Eval
+	osReadFile = os.ReadFile
+)
+
 func importImpl(args ...execute.Value) (execute.Value, error) {
 	if len(args) != 1 {
 		return nil, errors.CallError("import", len(args), 1)
 	}
-	if _, ok := args[0].(*types.Str); !ok {
+	argstr, ok := args[0].(*types.Str)
+	if !ok {
 		return nil, errors.NewTypeError(args[0].Type(), types.StrType)
 	}
-	name, err := args[0].ToStr()
-	if err != nil {
-		return nil, err
-	}
+	name := argstr.Value()
 	if strings.HasSuffix(name, ".slo") {
 		return importFile(name)
 	}
@@ -37,11 +40,11 @@ func importImpl(args ...execute.Value) (execute.Value, error) {
 }
 
 func importFile(path string) (execute.Value, error) {
-	bytes, err := os.ReadFile(path)
+	bytes, err := osReadFile(path)
 	if err != nil {
 		return nil, errors.WrapFileError(err, path)
 	}
 	env := RootEnvironment.NewFrame()
-	eval.Eval(string(bytes), env, false)
+	evalEval(string(bytes), env, false)
 	return types.NewModule(path, env), nil
 }

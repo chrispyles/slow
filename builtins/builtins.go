@@ -2,7 +2,13 @@ package builtins
 
 import (
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/printer"
 	"github.com/chrispyles/slow/types"
+)
+
+var (
+	println  = printer.Println
+	printlnf = printer.Printlnf
 )
 
 // RootEnvironment is a frozen environment containing all builtins. All execution environments

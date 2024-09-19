@@ -2,11 +2,8 @@ package builtins
 
 import (
 	"github.com/chrispyles/slow/execute"
-	"github.com/chrispyles/slow/printer"
 	"github.com/chrispyles/slow/types"
 )
-
-var println = printer.Println
 
 func printImpl(args ...execute.Value) (execute.Value, error) {
 	var fullout string
@@ -15,7 +12,7 @@ func printImpl(args ...execute.Value) (execute.Value, error) {
 		if s, ok := v.(*types.Str); ok {
 			// The Str.ToStr method returns the value without the delimiting quotes, so we use it here
 			// so as not to print the quotes when printing string values.
-			out, _ = s.ToStr()
+			out = s.Value()
 		} else {
 			out = v.String()
 		}
