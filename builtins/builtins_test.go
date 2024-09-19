@@ -16,9 +16,11 @@ import (
 var allowUnexported = cmp.AllowUnexported(
 	errors.SlowError{},
 	execute.Environment{},
+	rangeGenerator{},
 	types.Bool{},
 	types.Float{},
 	types.Func{},
+	types.Generator{},
 	types.Int{},
 	types.Iterator{},
 	types.List{},
