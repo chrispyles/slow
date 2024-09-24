@@ -1,5 +1,9 @@
 .PHONY: build
 
+COVERAGEARGS = -race -cover -covermode atomic
+BUILDCOVOUT  = 
+COVERDIR     := $(shell pwd)/.coverdata
+
 build:
 	go build -o build/slow
 
@@ -9,9 +13,18 @@ run: build
 test:
 	go test -v ./...
 
+# The buildcov rule requires the user to set BUILDCOVOUT to the path that the output binary should
+# be written to; for integration tests, this is handled in integration_test.go.
+buildcov:
+	@go build $(COVERAGEARGS) -o $(BUILDCOVOUT) .
+
+testcov: export SLOW_TESTING_GOCOVERDIR := $(COVERDIR)
 testcov:
-	go test -v -race -covermode atomic -coverprofile=profile.cov ./...
-	go tool covdata textfmt -i .coverdata -o coverage2.out
-	cat coverage2.out | tail -n +2 >> profile.cov
-	rm -r coverage2.out .coverdata
-	go tool cover -html=profile.cov -o=coverage.html
+	@mkdir -p $(COVERDIR)
+	@go test -v -shuffle=on $(COVERAGEARGS) ./... -args -test.gocoverdir="$(COVERDIR)"
+	@echo "=== Coverage Summary ==="
+	@go tool covdata percent -i $(COVERDIR)
+	@echo "=== Combining coverage data and saving to profile.cov ==="
+	@go tool covdata textfmt -i $(COVERDIR) -o profile.cov
+	@rm -r $(COVERDIR)
+	@go tool cover -html=profile.cov -o=coverage.html

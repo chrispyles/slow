@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -11,15 +12,12 @@ import (
 )
 
 const (
-	binaryName = "build/slow__test_binary"
+	binaryName     = "build/slow__test_binary"
+	coverDirEnvVar = "SLOW_TESTING_GOCOVERDIR"
 )
 
 func TestMain(m *testing.M) {
-	cmd := exec.Command("go", "build", "-cover", "-o", binaryName)
-	if err := cmd.Run(); err != nil {
-		panic(err)
-	}
-	cmd = exec.Command("mkdir", "-p", ".coverdata")
+	cmd := exec.Command("make", "buildcov", fmt.Sprintf("BUILDCOVOUT=%s", binaryName))
 	if err := cmd.Run(); err != nil {
 		panic(err)
 	}
@@ -37,19 +35,12 @@ func TestIntegration(t *testing.T) {
 }
 
 func runTest(t *testing.T, in string) {
-	// realStdout := os.Stdout
-	// r, w, _ := os.Pipe()
-	// os.Stdout = w
-	// defer func() {
-	// 	w.Close()
-	// 	os.Stdout = realStdout
-	// }()
 	golden, err := os.ReadFile(path.Join("testdata", filepath.Base(in)) + ".golden")
 	if err != nil {
 		t.Fatalf("failed to read golden: %v", err)
 	}
 	cmd := exec.Command(binaryName, in)
-	cmd.Env = append(os.Environ(), "GOCOVERDIR=.coverdata")
+	cmd.Env = append(os.Environ(), fmt.Sprintf("GOCOVERDIR=%s", os.Getenv(coverDirEnvVar)))
 	got, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("CombinedOutput() returned an unexpected error: %v", err)
