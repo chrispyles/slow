@@ -11,15 +11,20 @@ import (
 	"github.com/sanity-io/litter"
 )
 
+var (
+	makeAST = parser.NewAST
+	println = printer.Println
+)
+
 func Eval(s string, env *execute.Environment, printExprValue bool) {
-	ast, err := parser.NewAST(s)
+	ast, err := makeAST(s)
 	if err != nil {
 		printError(err)
 		return
 	}
 
-	astString := ast.String()
 	if *config.Debug {
+		astString := ast.String()
 		fmt.Println("<AST> ", astString)
 	}
 
@@ -35,7 +40,7 @@ func Eval(s string, env *execute.Environment, printExprValue bool) {
 	}
 
 	if printExprValue && val != types.Null {
-		printer.Println(val.String())
+		println(val.String())
 	}
 
 	if *config.Debug {

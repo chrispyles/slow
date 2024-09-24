@@ -59,3 +59,8 @@ type Value interface {
 	ToUint() (uint64, error)
 	Type() Type
 }
+
+type AST interface {
+	Execute(*Environment) (Value, error)
+	String() string
+}

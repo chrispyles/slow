@@ -10,7 +10,7 @@ type AST struct {
 	Nodes execute.Block
 }
 
-func NewAST(s string) (*AST, error) {
+func NewAST(s string) (execute.AST, error) {
 	b, err := parse(s)
 	if err != nil {
 		return nil, err
