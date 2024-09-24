@@ -5,7 +5,6 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/printer"
 	slowtesting "github.com/chrispyles/slow/testing"
@@ -13,21 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var allowUnexported = cmp.AllowUnexported(
-	errors.SlowError{},
-	execute.Environment{},
-	rangeGenerator{},
-	types.Bool{},
-	types.Float{},
-	types.Func{},
-	types.Generator{},
-	types.Int{},
-	types.Iterator{},
-	types.List{},
-	types.Module{},
-	types.Str{},
-	types.Uint{},
-)
+var allowUnexported = slowtesting.AllowUnexported(rangeGenerator{})
 
 // Adapted from https://github.com/google/go-cmp/issues/162
 var equateFuncs = cmp.Comparer(func(x, y types.FuncImpl) bool {

@@ -11,7 +11,6 @@ import (
 )
 
 func TestBuiltins_range(t *testing.T) {
-
 	doBuiltinTest(t, []builtinTest{
 		{
 			name: "one_arg",
@@ -217,7 +216,7 @@ func TestRangeGenerator(t *testing.T) {
 				got = append(got, n)
 			}
 			// TODO: the EquateApprox opt is necessary because 0_to_5_by_1.2_float yields 3.59999999... instead of 3.6; this should be fixed
-			if diff := cmp.Diff(tc.want, got, allowUnexported, cmpopts.EquateApprox(1e-6, 0)); diff != "" {
+			if diff := cmp.Diff(tc.want, got, allowUnexported, cmp.AllowUnexported(rangeGenerator{}), cmpopts.EquateApprox(1e-6, 0)); diff != "" {
 				t.Errorf("range generator yielded incorrect items (-want +got):\n%s", diff)
 			}
 		})
