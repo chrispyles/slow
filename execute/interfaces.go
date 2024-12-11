@@ -19,15 +19,6 @@ type Type interface {
 	String() string
 }
 
-type ComparisonErrorBuilder struct {
-	Source Type
-	Other  Type
-}
-
-func ComparisonError(s, o Type) *ComparisonErrorBuilder {
-	return &ComparisonErrorBuilder{s, o}
-}
-
 type Value interface {
 	// CloneIfPrimitive returns a copy of this value object if it is a primitive (i.e. pass-by-value).
 	// Values that are pass-by-reference should return a reference to the same instance.

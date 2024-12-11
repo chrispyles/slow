@@ -10,3 +10,6 @@
 /.coverdata
 *.TODO
 *.cov
+node_modules
+.vscode
+

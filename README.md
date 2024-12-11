@@ -679,7 +679,7 @@ Exiting with code 0
 Exiting with code 1
 ```
 
-If the argument passed to `exit` is not an integer, it is cast to an integer. If this cast succeeds, the integer value is used as the exit code. If the cast fails (i.e. if the argument is non-numeric), the argument is cast to a `bool` first, which is then case to an `int` (since all values can be cast to `bool`).
+If the argument passed to `exit` is not an integer, it is cast to an integer. If this cast succeeds, the integer value is used as the exit code. If the cast fails (i.e. if the argument is non-numeric), the argument is cast to a `bool` first, which is then cast to an `int` (since all values can be cast to `bool`).
 
 ```
 -> exit(2.1)
@@ -702,7 +702,7 @@ const utils = import("utils.slo")
 
 ##### `len`
 
-The `len` function returns the length of the provided value if it is supported. Currently, the only types in Slow that have lengths are `list`s and `map`s. `len` always returns a `uint`.
+The `len` function returns the length of the provided value if it is supported. Currently, the only types in Slow that have lengths are strings, `bytes`, `list`s, and `map`s. `len` always returns a `uint`.
 
 ```
 -> var l = [1, 2, 3]
@@ -728,7 +728,7 @@ The `range` function creates a generator for a range of numbers. It can take eit
 
 - If it receives 1 argument `n`, the generator it returns yields the sequence `0, 1, 2, ..., n-1`.
 - If it receives two arguments `m` and `n`, the generator yields the sequence `m, m+1, m+2, ..., n-1`. If `m > n`, the generator is infinite.
-- If it receives three arguments `m`, `n`, and `k`, the generator yields the sequence `m, m+k, m+2*k, ..., m+jk` where `m+jk` is the largested possible value less than `n`.
+- If it receives three arguments `m`, `n`, and `k`, the generator yields the sequence `m, m+k, m+2*k, ..., m+jk` where `m+jk` is the largest possible value less than `n`.
 
 ```
 range(10)        # yields 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
@@ -835,3 +835,17 @@ fs.readBytes("foo.txt")
 ### Error Handling
 
 ### Type Casting
+
+### Variadic and Keyword Function Arguments
+
+## Planned APIS
+
+### `fs` Module
+
+#### `fs.append`
+
+#### `fs.write`
+
+### `json` Module
+
+### `path` Module

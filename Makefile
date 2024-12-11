@@ -21,7 +21,7 @@ buildcov:
 testcov: export SLOW_TESTING_GOCOVERDIR := $(COVERDIR)
 testcov:
 	@mkdir -p $(COVERDIR)
-	@go test -v -shuffle=on $(COVERAGEARGS) ./... -args -test.gocoverdir="$(COVERDIR)"
+	@go test -shuffle=on $(COVERAGEARGS) ./... -args -test.gocoverdir="$(COVERDIR)"
 	@echo "=== Coverage Summary ==="
 	@go tool covdata percent -i $(COVERDIR)
 	@echo "=== Combining coverage data and saving to profile.cov ==="
