@@ -2,27 +2,32 @@ package interpreter
 
 import (
 	"bufio"
-	"os"
+	"io"
 
 	"github.com/chrispyles/slow/builtins"
-	"github.com/chrispyles/slow/eval"
+	evallib "github.com/chrispyles/slow/eval"
 	"github.com/chrispyles/slow/printer"
 	"github.com/chrispyles/slow/reader"
 )
 
-func Run(code string, interactive bool) {
+var (
+	read = reader.Read
+	eval = evallib.Eval
+)
+
+func Run(code string, interactiveReader io.Reader) {
 	env := builtins.RootEnvironment.NewFrame()
 	if code != "" {
-		eval.Eval(code, env, false)
+		eval(code, env, false)
 	}
 
-	if !interactive {
+	if interactiveReader == nil {
 		return
 	}
 
-	rdr := bufio.NewReader(os.Stdin)
+	rdr := bufio.NewReader(interactiveReader)
 	for {
-		stmt, err := reader.Read(rdr)
+		stmt, err := read(rdr)
 		if err != nil {
 			printError(err)
 			continue
@@ -31,7 +36,7 @@ func Run(code string, interactive bool) {
 			// Don't attempt to execute an empty line
 			continue
 		}
-		eval.Eval(stmt, env, true)
+		eval(stmt, env, true)
 	}
 }
 

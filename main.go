@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/chrispyles/slow/interpreter"
@@ -26,7 +27,12 @@ func main() {
 			panic(err)
 		}
 	}
-	interactive := flag.NArg() == 0 || *interpreterFlag
 
-	interpreter.Run(string(code), interactive)
+	interactive := flag.NArg() == 0 || *interpreterFlag
+	var rdr io.Reader
+	if interactive {
+		rdr = os.Stdin
+	}
+
+	interpreter.Run(string(code), rdr)
 }
