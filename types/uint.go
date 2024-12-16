@@ -80,6 +80,10 @@ func (v *Uint) ToBool() bool {
 	return true
 }
 
+func (v *Uint) ToBytes() ([]byte, error) {
+	return numToBytes(v.value), nil
+}
+
 func (v *Uint) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

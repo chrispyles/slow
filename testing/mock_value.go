@@ -22,6 +22,9 @@ type MockValue struct {
 
 	ToBoolRet bool
 
+	ToBytesRet []byte
+	ToBytesErr error
+
 	ToCallableRet execute.Callable
 	ToCallableErr error
 
@@ -96,6 +99,10 @@ func (m *MockValue) String() string {
 
 func (m *MockValue) ToBool() bool {
 	return m.ToBoolRet
+}
+
+func (m *MockValue) ToBytes() ([]byte, error) {
+	return m.ToBytesRet, m.ToBytesErr
 }
 
 func (m *MockValue) ToCallable() (execute.Callable, error) {

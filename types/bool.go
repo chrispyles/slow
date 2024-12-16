@@ -89,6 +89,13 @@ func (v *Bool) ToBool() bool {
 	return v.value
 }
 
+func (v *Bool) ToBytes() ([]byte, error) {
+	if v.value {
+		return []byte{0x01}, nil
+	}
+	return []byte{0x00}, nil
+}
+
 func (v *Bool) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

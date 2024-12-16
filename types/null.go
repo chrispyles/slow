@@ -58,6 +58,10 @@ func (v *null) ToBool() bool {
 	return false
 }
 
+func (v *null) ToBytes() ([]byte, error) {
+	return nil, errors.NewTypeError(v.Type(), BytesType)
+}
+
 func (v *null) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

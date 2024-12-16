@@ -16,6 +16,7 @@ type Iterator interface {
 type Type interface {
 	IsNumeric() bool
 	Matches(Type) bool
+	New(Value) (Value, error)
 	String() string
 }
 
@@ -42,6 +43,7 @@ type Value interface {
 	// String returns the formatted representation of the value, like __repr__ in Python.
 	String() string
 	ToBool() bool
+	ToBytes() ([]byte, error)
 	ToCallable() (Callable, error)
 	ToFloat() (float64, error)
 	ToInt() (int64, error)

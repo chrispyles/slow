@@ -19,6 +19,10 @@ func (m *MockType) Matches(t execute.Type) bool {
 	return m.MatchingTypes[t]
 }
 
+func (m *MockType) New(t execute.Value) (execute.Value, error) {
+	return &MockValue{}, nil
+}
+
 func NewMockType() *MockType {
 	return &MockType{StringRet: "MockType"}
 }

@@ -179,6 +179,10 @@ func (v *Map) ToBool() bool {
 	return true
 }
 
+func (v *Map) ToBytes() ([]byte, error) {
+	return nil, errors.NewTypeError(v.Type(), BytesType)
+}
+
 func (v *Map) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

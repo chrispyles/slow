@@ -107,6 +107,10 @@ func (v *List) ToBool() bool {
 	return true
 }
 
+func (v *List) ToBytes() ([]byte, error) {
+	return nil, errors.NewTypeError(v.Type(), BytesType)
+}
+
 func (v *List) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

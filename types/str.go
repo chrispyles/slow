@@ -89,6 +89,10 @@ func (v *Str) ToBool() bool {
 	return v.value != ""
 }
 
+func (v *Str) ToBytes() ([]byte, error) {
+	return []byte(v.value), nil
+}
+
 func (v *Str) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

@@ -76,6 +76,10 @@ func (v *Generator) ToBool() bool {
 	return true
 }
 
+func (v *Generator) ToBytes() ([]byte, error) {
+	return nil, errors.NewTypeError(v.Type(), BytesType)
+}
+
 func (v *Generator) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

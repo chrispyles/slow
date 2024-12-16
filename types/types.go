@@ -15,6 +15,10 @@ func (t *boolType) Matches(o execute.Type) bool {
 	return ok
 }
 
+func (t *boolType) New(v execute.Value) (execute.Value, error) {
+	return NewBool(v.ToBool()), nil
+}
+
 func (t *boolType) String() string {
 	return "bool"
 }
@@ -32,6 +36,14 @@ func (t *bytesType) IsNumeric() bool {
 func (t *bytesType) Matches(o execute.Type) bool {
 	_, ok := o.(*bytesType)
 	return ok
+}
+
+func (t *bytesType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToBytes()
+	if err != nil {
+		return nil, err
+	}
+	return NewBytes(vc), nil
 }
 
 func (t *bytesType) String() string {
@@ -53,6 +65,14 @@ func (t *floatType) Matches(o execute.Type) bool {
 	return ok
 }
 
+func (t *floatType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToFloat()
+	if err != nil {
+		return nil, err
+	}
+	return NewFloat(vc), nil
+}
+
 func (t *floatType) String() string {
 	return "float"
 }
@@ -70,6 +90,10 @@ func (t *funcType) IsNumeric() bool {
 func (t *funcType) Matches(o execute.Type) bool {
 	_, ok := o.(*funcType)
 	return ok
+}
+
+func (t *funcType) New(v execute.Value) (execute.Value, error) {
+	panic("funcType.New() is not supported")
 }
 
 func (t *funcType) String() string {
@@ -91,6 +115,10 @@ func (t *generatorType) Matches(o execute.Type) bool {
 	return ok
 }
 
+func (t *generatorType) New(v execute.Value) (execute.Value, error) {
+	panic("generatorType.New() is not supported")
+}
+
 func (t *generatorType) String() string {
 	return "generator"
 }
@@ -108,6 +136,14 @@ func (t *intType) IsNumeric() bool {
 func (t *intType) Matches(o execute.Type) bool {
 	_, ok := o.(*intType)
 	return ok
+}
+
+func (t *intType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToInt()
+	if err != nil {
+		return nil, err
+	}
+	return NewInt(vc), nil
 }
 
 func (t *intType) String() string {
@@ -129,6 +165,10 @@ func (t *iteratorType) Matches(o execute.Type) bool {
 	return ok
 }
 
+func (t *iteratorType) New(v execute.Value) (execute.Value, error) {
+	panic("iteratorType.New() is not supported")
+}
+
 func (t *iteratorType) String() string {
 	return "iterator"
 }
@@ -146,6 +186,13 @@ func (t *listType) IsNumeric() bool {
 func (t *listType) Matches(o execute.Type) bool {
 	_, ok := o.(*listType)
 	return ok
+}
+
+func (t *listType) New(v execute.Value) (execute.Value, error) {
+	if v == nil {
+		return NewList(nil), nil
+	}
+	panic("listType.New() is not supported with a non-nil argument")
 }
 
 func (t *listType) String() string {
@@ -167,6 +214,13 @@ func (t *mapType) Matches(o execute.Type) bool {
 	return ok
 }
 
+func (t *mapType) New(v execute.Value) (execute.Value, error) {
+	if v == nil {
+		return NewMap(), nil
+	}
+	panic("mapType.New() is not supported with a non-nil argument")
+}
+
 func (t *mapType) String() string {
 	return "map"
 }
@@ -184,6 +238,10 @@ func (t *moduleType) IsNumeric() bool {
 func (t *moduleType) Matches(o execute.Type) bool {
 	_, ok := o.(*moduleType)
 	return ok
+}
+
+func (t *moduleType) New(v execute.Value) (execute.Value, error) {
+	panic("moduleType.New() is not supported")
 }
 
 func (t *moduleType) String() string {
@@ -205,6 +263,10 @@ func (t *nullType) Matches(o execute.Type) bool {
 	return ok
 }
 
+func (t *nullType) New(v execute.Value) (execute.Value, error) {
+	panic("nullType.New() is not supported")
+}
+
 func (t *nullType) String() string {
 	return "null"
 }
@@ -224,6 +286,14 @@ func (t *strType) Matches(o execute.Type) bool {
 	return ok
 }
 
+func (t *strType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToStr()
+	if err != nil {
+		return nil, err
+	}
+	return NewStr(vc), nil
+}
+
 func (t *strType) String() string {
 	return "str"
 }
@@ -241,6 +311,14 @@ func (t *uintType) IsNumeric() bool {
 func (t *uintType) Matches(o execute.Type) bool {
 	_, ok := o.(*uintType)
 	return ok
+}
+
+func (t *uintType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToUint()
+	if err != nil {
+		return nil, err
+	}
+	return NewUint(vc), nil
 }
 
 func (t *uintType) String() string {

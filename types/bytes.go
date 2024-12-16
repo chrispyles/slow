@@ -93,6 +93,10 @@ func (v *Bytes) ToBool() bool {
 	return false
 }
 
+func (v *Bytes) ToBytes() ([]byte, error) {
+	return append([]byte{}, v.value...), nil
+}
+
 func (v *Bytes) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

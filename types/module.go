@@ -71,6 +71,10 @@ func (v *Module) ToBool() bool {
 	return true
 }
 
+func (v *Module) ToBytes() ([]byte, error) {
+	return nil, errors.NewTypeError(v.Type(), BytesType)
+}
+
 func (v *Module) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }

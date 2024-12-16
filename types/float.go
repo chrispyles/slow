@@ -91,6 +91,10 @@ func (v *Float) ToBool() bool {
 	return true
 }
 
+func (v *Float) ToBytes() ([]byte, error) {
+	return numToBytes(v.value), nil
+}
+
 func (v *Float) ToCallable() (execute.Callable, error) {
 	return nil, errors.NewTypeError(v.Type(), FuncType)
 }
