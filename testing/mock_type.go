@@ -1,6 +1,8 @@
 package testing
 
-import "github.com/chrispyles/slow/execute"
+import (
+	"github.com/chrispyles/slow/execute"
+)
 
 type MockType struct {
 	IsNumericRet  bool
@@ -21,6 +23,13 @@ func (m *MockType) Matches(t execute.Type) bool {
 
 func (m *MockType) New(t execute.Value) (execute.Value, error) {
 	return &MockValue{}, nil
+}
+
+func (m *MockType) String() string {
+	if m == nil {
+		return "MockType"
+	}
+	return m.StringRet
 }
 
 func NewMockType() *MockType {

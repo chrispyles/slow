@@ -6,14 +6,12 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
-func (m *MockType) String() string {
-	return m.StringRet
-}
-
 type MockValue struct {
 	EqualsRet bool
 
 	Attributes map[string]execute.Value
+
+	CloneIfPrimitiveCalls int
 
 	LengthRet uint64
 	LengthErr error
@@ -47,6 +45,7 @@ type MockValue struct {
 }
 
 func (m *MockValue) CloneIfPrimitive() execute.Value {
+	m.CloneIfPrimitiveCalls++
 	return m
 }
 
@@ -94,6 +93,9 @@ func (m *MockValue) SetIndex(execute.Value, execute.Value) error {
 }
 
 func (m *MockValue) String() string {
+	if m == nil || m.StringRet == "" {
+		return "MockValue"
+	}
 	return m.StringRet
 }
 

@@ -1,7 +1,9 @@
 package operators
 
-import "github.com/chrispyles/slow/execute"
-import "github.com/chrispyles/slow/types"
+import (
+	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/types"
+)
 
 type typeCaster struct {
 	dest      execute.Type
@@ -43,7 +45,7 @@ func (c *typeCaster) singleCast(val execute.Value) (execute.Value, error) {
 	return res, err
 }
 
-func (c *typeCaster) Cast(l, r execute.Value) (execute.Value, execute.Value, error) {
+func (c *typeCaster) Cast(l, r execute.Value) (execute.Value, execute.Value) {
 	var lc execute.Value
 	var rc execute.Value
 	var err error
@@ -53,14 +55,20 @@ func (c *typeCaster) Cast(l, r execute.Value) (execute.Value, execute.Value, err
 		lc = l
 	}
 	if err != nil {
-		return nil, nil, err
+		// The typeCaster should fail during construction if the type cast is not possible, so
+		// singleCast should never return an error.
+		panic(err)
 	}
 	if c.castRight {
 		rc, err = c.singleCast(r)
 	} else {
 		rc = r
 	}
-	return lc, rc, err
+	if err != nil {
+		// See comment in previous error handling block.
+		panic(err)
+	}
+	return lc, rc
 }
 
 func (c *typeCaster) Dest() execute.Type {

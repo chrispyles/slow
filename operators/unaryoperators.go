@@ -23,6 +23,8 @@ func (o *UnaryOperator) Value(v execute.Value) (execute.Value, error) {
 		case types.IntType:
 			return types.NewInt(-1 * must(v.ToInt())), nil
 		case types.UintType:
+			fallthrough
+		case types.BoolType:
 			return types.NewInt(-1 * must(v.ToInt())), nil
 		default:
 			return nil, errors.IncompatibleType(v.Type(), o.String())

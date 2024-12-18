@@ -2,6 +2,7 @@ package operators
 
 import (
 	"math"
+	"reflect"
 
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
@@ -27,12 +28,13 @@ var reassignmentToArithmeticOperator = map[*BinaryOperator]*BinaryOperator{
 	BinOp_RXOR:   BinOp_XOR,
 }
 
-var incomparableTypes = map[execute.Type]bool{
-	types.FuncType:      true,
-	types.GeneratorType: true,
-	types.IteratorType:  true,
-	types.ListType:      true,
-	types.NullType:      true,
+var comparableTypes = map[execute.Type]bool{
+	types.BoolType:  true,
+	types.BytesType: true,
+	types.FloatType: true,
+	types.IntType:   true,
+	types.StrType:   true,
+	types.UintType:  true,
 }
 
 func (o *BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
@@ -60,9 +62,17 @@ func (o *BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 		}
 
 		if lt == types.UintType && rt == types.UintType {
-			return types.NewUint(must(l.ToUint()) % must(r.ToUint())), nil
+			ru := must(r.ToUint())
+			if ru == 0 {
+				return nil, errors.NewZeroDivisionError()
+			}
+			return types.NewUint(must(l.ToUint()) % ru), nil
 		}
-		return types.NewInt(must(l.ToInt()) % must(r.ToInt())), nil
+		ri := must(r.ToInt())
+		if ri == 0 {
+			return nil, errors.NewZeroDivisionError()
+		}
+		return types.NewInt(must(l.ToInt()) % ri), nil
 	}
 
 	if logicalOperators[o] {
@@ -94,18 +104,19 @@ func (o *BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 		return nil, errors.IncompatibleTypes(lt, rt, o.String())
 	}
 
-	doCast := func() (execute.Value, execute.Value, error) {
+	doCast := func() (execute.Value, execute.Value) {
 		return caster.Cast(l, r)
 	}
 
 	if o.IsComparison() {
-		if incomparableTypes[lt] || incomparableTypes[rt] {
+		if !comparableTypes[lt] || !comparableTypes[rt] {
 			// These types are all pass-by-reference, and will be equal iff they are the same instance.
+			lp, rp := reflect.ValueOf(l).Pointer(), reflect.ValueOf(r).Pointer()
 			switch o {
 			case BinOp_EQ:
-				return types.NewBool(lt == rt), nil
+				return types.NewBool(lp == rp), nil
 			case BinOp_NEQ:
-				return types.NewBool(lt != rt), nil
+				return types.NewBool(lp != rp), nil
 			default:
 				return nil, errors.IncompatibleTypes(lt, rt, o.String())
 			}
@@ -134,10 +145,7 @@ func (o *BinaryOperator) Value(l, r execute.Value) (execute.Value, error) {
 		}
 	}
 
-	lc, rc, err := doCast()
-	if err != nil {
-		return nil, err
-	}
+	lc, rc := doCast()
 
 	// Return an error if there is an attempt to divide by zero.
 	if caster.dest.IsNumeric() && must(rc.ToFloat()) == 0 && (o == BinOp_DIV || o == BinOp_MOD || o == BinOp_FDIV) {
@@ -247,6 +255,9 @@ var operatorPrecedence = map[*BinaryOperator]int{
 	BinOp_LEQ:   1,
 	BinOp_GT:    1,
 	BinOp_GEQ:   1,
+	BinOp_AND:   2,
+	BinOp_OR:    2,
+	BinOp_XOR:   2,
 }
 
 // Compare returns true if this BinaryOperator takes precendence over other (i.e. this operation
