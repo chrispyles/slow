@@ -37,6 +37,7 @@ const (
 	// functions
 	kw_FUNC   = "func"
 	kw_RETURN = "return"
+	kw_DEFER  = "defer"
 
 	// declarations
 	kw_VAR   = "var"
@@ -77,6 +78,7 @@ var reservedKeywords = map[string]bool{
 	// functions
 	kw_FUNC:   true,
 	kw_RETURN: true,
+	kw_DEFER:  true,
 
 	// declarations
 	kw_VAR:   true,
@@ -622,6 +624,18 @@ func parseReturn(buf *Buffer) (execute.Expression, error) {
 	return &ReturnNode{Value: expr}, nil
 }
 
+// TODO: add a test that ensures only a CallNode can be the expression in a DeferNode
+func parseDefer(buf *Buffer) (execute.Expression, error) {
+	expr, err := parseExpressionStart(buf)
+	if err != nil {
+		return nil, err
+	}
+	if _, ok := expr.(*CallNode); !ok {
+		return nil, errors.NewSyntaxError(buf, "only function calls may be deferred", "")
+	}
+	return &DeferNode{Expr: expr}, nil
+}
+
 func parseString(buf *Buffer, tkn string) (execute.Expression, error) {
 	if tkn[len(tkn)-1] != stringDelim {
 		return nil, errors.NewSyntaxError(buf, "unclosed string", "")
@@ -745,6 +759,7 @@ func init() {
 		// functions
 		kw_FUNC:   parseFunc,
 		kw_RETURN: parseReturn,
+		kw_DEFER:  parseDefer,
 
 		// declarations
 		kw_VAR:   parseVar,

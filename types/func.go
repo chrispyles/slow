@@ -14,6 +14,12 @@ type ReturnError struct {
 
 func (*ReturnError) Error() string { return "" }
 
+type DeferError struct {
+	Expr execute.Expression
+}
+
+func (*DeferError) Error() string { return "" }
+
 // FuncImpl is a function whose logic is implemented in Go, for builtins.
 type FuncImpl func(...execute.Value) (execute.Value, error)
 
@@ -41,6 +47,8 @@ func (v *Func) Call(env *execute.Environment, args ...execute.Value) (execute.Va
 	if got, want := len(args), len(v.args); got != want {
 		return nil, errors.CallError(v.name, got, want)
 	}
+	var deferrals []execute.Expression
+	var retValue execute.Value
 	for i := range v.args {
 		name, val := v.args[i], args[i]
 		if err := env.Declare(name); err != nil {
@@ -54,10 +62,23 @@ func (v *Func) Call(env *execute.Environment, args ...execute.Value) (execute.Va
 		_, err := expr.Execute(env)
 		if err != nil {
 			if re, ok := err.(*ReturnError); ok {
-				return re.Value, nil
+				retValue = re.Value
+				break
+			} else if de, ok := err.(*DeferError); ok {
+				deferrals = append(deferrals, de.Expr)
+				continue
 			}
 			return nil, err
 		}
+	}
+	for _, expr := range deferrals {
+		_, err := expr.Execute(env)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if retValue != nil {
+		return retValue, nil
 	}
 	// A function with no return statement returns null.
 	return Null, nil

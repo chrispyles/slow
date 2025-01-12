@@ -661,6 +661,23 @@ Like everything in Slow, functions are also values and can be treated as such.
 true
 ```
 
+#### Defer Statements
+
+Inside a function, a function call can be deferred so that it runs just before the function exits, instead of wherever in the body the `defer` statement is (like Go's `defer` statement). Statements are accrued but not evaluated as the function's body executes and before the function exits, they are run. **Deferred functions are currently not run if the function throws an error.** This behavior will likely be added in the future.
+
+```
+-> func foo() {
+..   # without the deferral, this statement would error because the variable does not yet exist
+..   defer print(i)
+..   var i = 0
+..   for _ in range(20) {
+..     ++i
+..   }
+.. }
+-> foo()
+20
+```
+
 #### Built-in Functions
 
 Slow has a few functions built into the language. They are declared in a frozen frame that is the parent of the frame that the global environment is declared in.

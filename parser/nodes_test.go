@@ -250,6 +250,27 @@ func TestContinueNode(t *testing.T) {
 	})
 }
 
+func TestDeferNode(t *testing.T) {
+	runTestCase(t, testCase{
+		node: &DeferNode{
+			Expr: &CallNode{
+				Func: &VariableNode{Name: "print"},
+				Args: []execute.Expression{
+					&VariableNode{Name: "x"},
+				},
+			},
+		},
+		wantErr: &types.DeferError{
+			Expr: &CallNode{
+				Func: &VariableNode{Name: "print"},
+				Args: []execute.Expression{
+					&VariableNode{Name: "x"},
+				},
+			},
+		},
+	})
+}
+
 func TestFallthroughNode(t *testing.T) {
 	runTestCase(t, testCase{
 		node:    &FallthroughNode{},

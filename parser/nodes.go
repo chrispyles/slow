@@ -193,6 +193,17 @@ func (*ContinueNode) Execute(e *execute.Environment) (execute.Value, error) {
 }
 
 // -------------------------------------------------------------------------------------------------
+// Defer node
+
+type DeferNode struct {
+	Expr execute.Expression
+}
+
+func (n *DeferNode) Execute(e *execute.Environment) (execute.Value, error) {
+	return nil, &types.DeferError{Expr: n.Expr}
+}
+
+// -------------------------------------------------------------------------------------------------
 // Fallthrough node
 
 type fallthroughError struct{}
