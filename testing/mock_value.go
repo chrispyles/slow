@@ -1,8 +1,7 @@
 package testing
 
 import (
-	"fmt"
-
+	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
 )
 
@@ -59,11 +58,11 @@ func (m *MockValue) Equals(execute.Value) bool {
 
 func (m *MockValue) GetAttribute(a string) (execute.Value, error) {
 	if m.Attributes == nil {
-		return nil, fmt.Errorf("attribute error: type %q, attribute %q", m.Type(), a)
+		return nil, errors.NewAttributeError(m.Type(), a)
 	}
 	ret, ok := m.Attributes[a]
 	if !ok {
-		return nil, fmt.Errorf("attribute error: type %q, attribute %q", m.Type(), a)
+		return nil, errors.NewAttributeError(m.Type(), a)
 	}
 	return ret, nil
 }

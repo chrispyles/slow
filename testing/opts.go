@@ -1,6 +1,8 @@
 package testing
 
 import (
+	"unsafe"
+
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/types"
@@ -27,4 +29,13 @@ func AllowUnexported(addl ...interface{}) cmp.Option {
 			},
 			addl...)...,
 	)
+}
+
+// Adapted from https://github.com/google/go-cmp/issues/162
+func EquateFuncs() cmp.Option {
+	return cmp.Comparer(func(x, y types.FuncImpl) bool {
+		px := *(*unsafe.Pointer)(unsafe.Pointer(&x))
+		py := *(*unsafe.Pointer)(unsafe.Pointer(&y))
+		return px == py
+	})
 }

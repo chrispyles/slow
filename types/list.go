@@ -145,7 +145,7 @@ type listIterator struct {
 }
 
 func (i *listIterator) HasNext() bool {
-	return i.idx < len(i.list.values)-1
+	return i.idx <= len(i.list.values)-1
 }
 
 func (i *listIterator) Next() (execute.Value, error) {

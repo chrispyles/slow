@@ -3,23 +3,14 @@ package builtins
 import (
 	"fmt"
 	"testing"
-	"unsafe"
 
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/printer"
 	slowtesting "github.com/chrispyles/slow/testing"
-	"github.com/chrispyles/slow/types"
 	"github.com/google/go-cmp/cmp"
 )
 
 var allowUnexported = slowtesting.AllowUnexported(rangeGenerator{})
-
-// Adapted from https://github.com/google/go-cmp/issues/162
-var equateFuncs = cmp.Comparer(func(x, y types.FuncImpl) bool {
-	px := *(*unsafe.Pointer)(unsafe.Pointer(&x))
-	py := *(*unsafe.Pointer)(unsafe.Pointer(&y))
-	return px == py
-})
 
 type builtinTest struct {
 	name         string
@@ -65,7 +56,7 @@ func doBuiltinTest(t *testing.T, tests []builtinTest) {
 			if diff := cmp.Diff(tc.wantErr, err, allowUnexported); diff != "" {
 				t.Errorf("c.Call() returned incorrect error (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want, got, allowUnexported, equateFuncs); diff != "" {
+			if diff := cmp.Diff(tc.want, got, allowUnexported, slowtesting.EquateFuncs()); diff != "" {
 				t.Errorf("c.Call() returned incorrect value (-want +got):\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.wantPrintlns, printed); diff != "" {

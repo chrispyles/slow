@@ -2,6 +2,7 @@ package execute
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/chrispyles/slow/errors"
 )
@@ -22,6 +23,19 @@ func FromMap(values map[string]Value) *Environment {
 	e := &Environment{values: values}
 	e.Freeze()
 	return e
+}
+
+// Copy returns a shallow copy of this environment.
+func (e *Environment) Copy() *Environment {
+  if e == nil {
+    return nil
+  }
+  return &Environment{
+    values: maps.Clone(e.values),
+    consts: maps.Clone(e.consts),
+    parent: e.parent,
+    frozen: e.frozen,
+  }
 }
 
 func (e *Environment) Declare(n string) error {

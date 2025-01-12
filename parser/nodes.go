@@ -137,7 +137,7 @@ func (*breakError) Error() string { return "" }
 type BreakNode struct{}
 
 func (*BreakNode) Execute(e *execute.Environment) (execute.Value, error) {
-	return types.Null, &breakError{}
+	return nil, &breakError{}
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ func (*continueError) Error() string { return "" }
 type ContinueNode struct{}
 
 func (*ContinueNode) Execute(e *execute.Environment) (execute.Value, error) {
-	return types.Null, &continueError{}
+	return nil, &continueError{}
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -202,7 +202,7 @@ func (*fallthroughError) Error() string { return "" }
 type FallthroughNode struct{}
 
 func (*FallthroughNode) Execute(e *execute.Environment) (execute.Value, error) {
-	return types.Null, &fallthroughError{}
+	return nil, &fallthroughError{}
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -376,7 +376,7 @@ type switchCase struct {
 
 type SwitchNode struct {
 	Value       execute.Expression
-	Cases       []*switchCase
+	Cases       []switchCase
 	DefaultCase execute.Block
 }
 
