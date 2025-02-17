@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/chrispyles/slow/ast"
 	"github.com/chrispyles/slow/config"
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
@@ -174,14 +175,14 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 			if err != nil {
 				return nil, err
 			}
-			return contExpressionParsing(buf, &ListNode{Values: values})
+			return contExpressionParsing(buf, &ast.ListNode{Values: values})
 		} else if tkn == "{" {
 			// This is an inline map
 			values, err := parseMap(buf)
 			if err != nil {
 				return nil, err
 			}
-			return contExpressionParsing(buf, &MapNode{Values: values})
+			return contExpressionParsing(buf, &ast.MapNode{Values: values})
 		} else {
 			val, err = evaluateLiteralToken(tkn, buf)
 		}
@@ -219,7 +220,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err := validateSymbol(buf, sym); err != nil {
 			return nil, err
 		}
-		expr, err := parseExpression(buf, &AttributeNode{Left: val, Right: sym})
+		expr, err := parseExpression(buf, &ast.AttributeNode{Left: val, Right: sym})
 		if err != nil {
 			return nil, err
 		}
@@ -230,9 +231,9 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 	}
 	if c == "=" {
 		// This is a variable assignment
-		varNode, isVar := val.(*VariableNode)
-		attrNode, isAttr := val.(*AttributeNode)
-		idxNode, isIdx := val.(*IndexNode)
+		varNode, isVar := val.(*ast.VariableNode)
+		attrNode, isAttr := val.(*ast.AttributeNode)
+		idxNode, isIdx := val.(*ast.IndexNode)
 		if !isVar && !isAttr && !isIdx {
 			return nil, errors.NewSyntaxError(buf, "cannot assign to non-symbol", "")
 		}
@@ -240,15 +241,15 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err != nil {
 			return nil, err
 		}
-		var at assignmentTarget
+		var at ast.AssignmentTarget
 		if isVar {
-			at = assignmentTarget{variable: varNode.Name}
+			at = ast.AssignmentTarget{Variable: varNode.Name}
 		} else if isAttr {
-			at = assignmentTarget{attribute: attrNode}
+			at = ast.AssignmentTarget{Attribute: attrNode}
 		} else {
-			at = assignmentTarget{index: idxNode}
+			at = ast.AssignmentTarget{Index: idxNode}
 		}
-		return &AssignmentNode{Left: at, Right: right}, nil
+		return &ast.AssignmentNode{Left: at, Right: right}, nil
 	}
 	if c == "(" {
 		// This is a function call
@@ -256,7 +257,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err != nil {
 			return nil, err
 		}
-		return contExpressionParsing(buf, &CallNode{Func: val, Args: args})
+		return contExpressionParsing(buf, &ast.CallNode{Func: val, Args: args})
 	}
 	if c == "[" {
 		indexExpr, err := parseExpressionStart(buf)
@@ -266,7 +267,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if err := expectClose(buf, "]"); err != nil {
 			return nil, err
 		}
-		expr := &IndexNode{Container: val, Index: indexExpr}
+		expr := &ast.IndexNode{Container: val, Index: indexExpr}
 		if buf.Current() == "\n" {
 			return expr, nil
 		}
@@ -315,7 +316,7 @@ func evaluateLiteralToken(tkn string, buf *Buffer) (execute.Expression, error) {
 			}
 			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as int", tkn))
 		}
-		return &ConstantNode{Value: types.NewInt(intValue)}, nil
+		return &ast.ConstantNode{Value: types.NewInt(intValue)}, nil
 	}
 	if uintRegex.Match(tknBytes) {
 		// Remove trailing "u" from uint syntax
@@ -327,7 +328,7 @@ func evaluateLiteralToken(tkn string, buf *Buffer) (execute.Expression, error) {
 			}
 			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as uint", tkn))
 		}
-		return &ConstantNode{Value: types.NewUint(uintValue)}, nil
+		return &ast.ConstantNode{Value: types.NewUint(uintValue)}, nil
 	}
 	if floatRegex.Match(tknBytes) {
 		floatValue, err := strconv.ParseFloat(tkn, 64)
@@ -337,7 +338,7 @@ func evaluateLiteralToken(tkn string, buf *Buffer) (execute.Expression, error) {
 			}
 			return nil, errors.NewValueError(fmt.Sprintf("unable to parse %q as float", tkn))
 		}
-		return &ConstantNode{Value: types.NewFloat(floatValue)}, nil
+		return &ast.ConstantNode{Value: types.NewFloat(floatValue)}, nil
 	}
 	if bytesRegex.Match(tknBytes) {
 		if len(tknBytes)%2 != 0 {
@@ -349,24 +350,24 @@ func evaluateLiteralToken(tkn string, buf *Buffer) (execute.Expression, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &ConstantNode{Value: types.NewBytes(bytes)}, nil
+		return &ast.ConstantNode{Value: types.NewBytes(bytes)}, nil
 	}
 	if tkn[0] == stringDelim {
 		return parseString(buf, tkn)
 	}
 	if tkn == kw_TRUE {
-		return &ConstantNode{Value: types.NewBool(true)}, nil
+		return &ast.ConstantNode{Value: types.NewBool(true)}, nil
 	}
 	if tkn == kw_FALSE {
-		return &ConstantNode{Value: types.NewBool(false)}, nil
+		return &ast.ConstantNode{Value: types.NewBool(false)}, nil
 	}
 	if tkn == kw_NULL {
-		return &ConstantNode{Value: types.Null}, nil
+		return &ast.ConstantNode{Value: types.Null}, nil
 	}
 	if err := validateSymbol(buf, tkn); err != nil {
 		return nil, err
 	}
-	return &VariableNode{Name: tkn}, nil
+	return &ast.VariableNode{Name: tkn}, nil
 
 }
 
@@ -414,9 +415,9 @@ func parseBlock(buf *Buffer) (execute.Block, error) {
 func parseBinaryOperation(buf *Buffer, op *operators.BinaryOperator, left execute.Expression) (execute.Expression, error) {
 	if op.IsReassignmentOperator() {
 		// Ensure that the left operand is assignable if the operator is a reassignment operator.
-		_, isVar := left.(*VariableNode)
-		_, isAttr := left.(*AttributeNode)
-		_, isIdx := left.(*IndexNode)
+		_, isVar := left.(*ast.VariableNode)
+		_, isAttr := left.(*ast.AttributeNode)
+		_, isIdx := left.(*ast.IndexNode)
 		if !isVar && !isAttr && !isIdx {
 			return nil, errors.NewSyntaxError(buf, "cannot reassign literal value", "")
 		}
@@ -429,7 +430,7 @@ func parseBinaryOperation(buf *Buffer, op *operators.BinaryOperator, left execut
 		if err != nil {
 			return nil, err
 		}
-		right = &UnaryOpNode{Op: uop, Expr: rightOperand}
+		right = &ast.UnaryOpNode{Op: uop, Expr: rightOperand}
 	} else if c == "(" {
 		right, err = parseExpressionStart(buf)
 		if err != nil {
@@ -448,7 +449,7 @@ func parseBinaryOperation(buf *Buffer, op *operators.BinaryOperator, left execut
 	if err != nil {
 		return nil, err
 	}
-	node := &BinaryOpNode{Op: op, Left: left, Right: right}
+	node := &ast.BinaryOpNode{Op: op, Left: left, Right: right}
 	// check if this is a chain of binary ops
 	nextOp, ok := operators.ToBinaryOp(buf.Current())
 	for ok {
@@ -467,18 +468,18 @@ func parseBinaryOperation(buf *Buffer, op *operators.BinaryOperator, left execut
 }
 
 // addNewBinOp adds a new operation to the provided tree of binary operations.
-func addNewBinOp(n *BinaryOpNode, op *operators.BinaryOperator, val execute.Expression) *BinaryOpNode {
+func addNewBinOp(n *ast.BinaryOpNode, op *operators.BinaryOperator, val execute.Expression) *ast.BinaryOpNode {
 	if n.Op.Compare(op) {
 		// The existing BinaryOpNode has a higher precedence than op, so put it lower in the AST.
-		return &BinaryOpNode{Op: op, Left: n, Right: val}
+		return &ast.BinaryOpNode{Op: op, Left: n, Right: val}
 	}
 	// The new operator (op) has a higher precedence than BinaryOpNode, so adjust the tree so the new
 	// node is inserted lower.
-	var child *BinaryOpNode
-	if nr, ok := n.Right.(*BinaryOpNode); ok {
+	var child *ast.BinaryOpNode
+	if nr, ok := n.Right.(*ast.BinaryOpNode); ok {
 		child = addNewBinOp(nr, op, val)
 	} else {
-		child = &BinaryOpNode{Op: op, Left: n.Right, Right: val}
+		child = &ast.BinaryOpNode{Op: op, Left: n.Right, Right: val}
 	}
 	n.Right = child
 	return n
@@ -488,21 +489,21 @@ func parseBreak(buf *Buffer) (execute.Expression, error) {
 	if c := buf.Current(); c != "\n" {
 		return nil, errors.UnexpectedSymbolError(buf, c, "\n")
 	}
-	return &BreakNode{}, nil
+	return &ast.BreakNode{}, nil
 }
 
 func parseContinue(buf *Buffer) (execute.Expression, error) {
 	if c := buf.Current(); c != "\n" {
 		return nil, errors.UnexpectedSymbolError(buf, c, "\n")
 	}
-	return &ContinueNode{}, nil
+	return &ast.ContinueNode{}, nil
 }
 
 func parseFallthrough(buf *Buffer) (execute.Expression, error) {
 	if c := buf.Current(); c != "\n" {
 		return nil, errors.UnexpectedSymbolError(buf, c, "\n")
 	}
-	return &FallthroughNode{}, nil
+	return &ast.FallthroughNode{}, nil
 }
 
 func parseFor(buf *Buffer) (execute.Expression, error) {
@@ -521,7 +522,7 @@ func parseFor(buf *Buffer) (execute.Expression, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ForNode{IterName: iterName, Iter: iter, Body: body}, nil
+	return &ast.ForNode{IterName: iterName, Iter: iter, Body: body}, nil
 }
 
 func parseFunc(buf *Buffer) (execute.Expression, error) {
@@ -550,7 +551,7 @@ func parseFunc(buf *Buffer) (execute.Expression, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &FuncNode{Name: name, ArgNames: argNames, Body: body}, nil
+	return &ast.FuncNode{Name: name, ArgNames: argNames, Body: body}, nil
 }
 
 func parseIf(buf *Buffer) (execute.Expression, error) {
@@ -562,7 +563,7 @@ func parseIf(buf *Buffer) (execute.Expression, error) {
 	if err != nil {
 		return nil, err
 	}
-	node := &IfNode{Cond: cond, Body: body}
+	node := &ast.IfNode{Cond: cond, Body: body}
 	buf.ConsumeNewlines()
 	if buf.Current() == kw_ELSE {
 		buf.Pop() // remove "else" from the buffer
@@ -621,7 +622,7 @@ func parseReturn(buf *Buffer) (execute.Expression, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ReturnNode{Value: expr}, nil
+	return &ast.ReturnNode{Value: expr}, nil
 }
 
 // TODO: add a test that ensures only a CallNode can be the expression in a DeferNode
@@ -630,10 +631,10 @@ func parseDefer(buf *Buffer) (execute.Expression, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := expr.(*CallNode); !ok {
+	if _, ok := expr.(*ast.CallNode); !ok {
 		return nil, errors.NewSyntaxError(buf, "only function calls may be deferred", "")
 	}
-	return &DeferNode{Expr: expr}, nil
+	return &ast.DeferNode{Expr: expr}, nil
 }
 
 func parseString(buf *Buffer, tkn string) (execute.Expression, error) {
@@ -652,7 +653,7 @@ func parseString(buf *Buffer, tkn string) (execute.Expression, error) {
 			s += string(tkn[i])
 		}
 	}
-	return &ConstantNode{Value: types.NewStr(s)}, nil
+	return &ast.ConstantNode{Value: types.NewStr(s)}, nil
 }
 
 func parseSwitch(buf *Buffer) (execute.Expression, error) {
@@ -673,22 +674,22 @@ func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expr
 		return nil, err
 	}
 	var node execute.Expression
-	if binop, ok := expr.(*BinaryOpNode); ok {
+	if binop, ok := expr.(*ast.BinaryOpNode); ok {
 		// Unary operators take precedence over binary operators, so push the unary operation down.
-		unop := &UnaryOpNode{Op: op, Expr: binop.Left}
+		unop := &ast.UnaryOpNode{Op: op, Expr: binop.Left}
 		binop.Left = unop
 		node = binop
 	} else {
-		node = &UnaryOpNode{Op: op, Expr: expr}
+		node = &ast.UnaryOpNode{Op: op, Expr: expr}
 	}
 	if wantClosingParen {
 		expectClose(buf, ")") // remove ")" from the buffer
 	}
 	if op.IsReassignmentOperator() {
 		// Ensure that the left operand is assignable if the operator is a reassignment operator.
-		_, isVar := expr.(*VariableNode)
-		_, isAttr := expr.(*AttributeNode)
-		_, isIdx := expr.(*IndexNode)
+		_, isVar := expr.(*ast.VariableNode)
+		_, isAttr := expr.(*ast.AttributeNode)
+		_, isIdx := expr.(*ast.IndexNode)
 		if !isVar && !isAttr && !isIdx {
 			return nil, errors.NewSyntaxError(buf, "cannot reassign literal value", "")
 		}
@@ -707,7 +708,7 @@ func parseVar(buf *Buffer) (execute.Expression, error) {
 	if err := validateSymbol(buf, name); err != nil {
 		return nil, err
 	}
-	node := &VarNode{Name: name, IsConst: isConst}
+	node := &ast.VarNode{Name: name, IsConst: isConst}
 	if buf.Current() != "=" {
 		if isConst {
 			return nil, errors.NewSyntaxError(buf, "const expression does not initialize a value", "")
@@ -732,7 +733,7 @@ func parseWhile(buf *Buffer) (execute.Expression, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &WhileNode{Cond: cond, Body: body}, nil
+	return &ast.WhileNode{Cond: cond, Body: body}, nil
 }
 
 func expectClose(buf *Buffer, wantChar string) error {

@@ -3,6 +3,7 @@ package parser
 import (
 	"testing"
 
+	"github.com/chrispyles/slow/ast"
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/operators"
 	"github.com/chrispyles/slow/types"
@@ -10,7 +11,7 @@ import (
 )
 
 var allowTypesUnexported = cmp.AllowUnexported(
-	assignmentTarget{},
+	ast.AssignmentTarget{},
 	operators.BinaryOperator{},
 	operators.UnaryOperator{},
 	types.Bool{},
@@ -102,7 +103,7 @@ func TestArithmetic(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.code, func(t *testing.T) {
-			a, err := NewAST(tc.code)
+			a, err := Parse(tc.code)
 			if err != nil {
 				t.Fatalf("NewAST returned an unexpected error: %v", err)
 			}
@@ -121,21 +122,21 @@ func TestSmallASTs(t *testing.T) {
 	tests := []struct {
 		name string
 		code string
-		want *AST
+		want *ast.AST
 	}{
 		{
 			name: "bin_op_combination",
 			code: "x % 2 == 0u",
-			want: &AST{
+			want: &ast.AST{
 				Nodes: execute.Block{
-					&BinaryOpNode{
+					&ast.BinaryOpNode{
 						Op: operators.BinOp_EQ,
-						Left: &BinaryOpNode{
+						Left: &ast.BinaryOpNode{
 							Op:    operators.BinOp_MOD,
-							Left:  &VariableNode{Name: "x"},
-							Right: &ConstantNode{Value: types.NewInt(2)},
+							Left:  &ast.VariableNode{Name: "x"},
+							Right: &ast.ConstantNode{Value: types.NewInt(2)},
 						},
-						Right: &ConstantNode{Value: types.NewUint(0)},
+						Right: &ast.ConstantNode{Value: types.NewUint(0)},
 					},
 				},
 			},
@@ -143,29 +144,29 @@ func TestSmallASTs(t *testing.T) {
 		{
 			name: "arithmetic_with_method_calls",
 			code: "m.get(i) + m.get(i + 1)",
-			want: &AST{
+			want: &ast.AST{
 				Nodes: execute.Block{
-					&BinaryOpNode{
+					&ast.BinaryOpNode{
 						Op: operators.BinOp_PLUS,
-						Left: &CallNode{
-							Func: &AttributeNode{
-								Left:  &VariableNode{Name: "m"},
+						Left: &ast.CallNode{
+							Func: &ast.AttributeNode{
+								Left:  &ast.VariableNode{Name: "m"},
 								Right: "get",
 							},
 							Args: []execute.Expression{
-								&VariableNode{Name: "i"},
+								&ast.VariableNode{Name: "i"},
 							},
 						},
-						Right: &CallNode{
-							Func: &AttributeNode{
-								Left:  &VariableNode{Name: "m"},
+						Right: &ast.CallNode{
+							Func: &ast.AttributeNode{
+								Left:  &ast.VariableNode{Name: "m"},
 								Right: "get",
 							},
 							Args: []execute.Expression{
-								&BinaryOpNode{
+								&ast.BinaryOpNode{
 									Op:    operators.BinOp_PLUS,
-									Left:  &VariableNode{Name: "i"},
-									Right: &ConstantNode{Value: types.NewInt(1)},
+									Left:  &ast.VariableNode{Name: "i"},
+									Right: &ast.ConstantNode{Value: types.NewInt(1)},
 								},
 							},
 						},
@@ -176,7 +177,7 @@ func TestSmallASTs(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := NewAST(tc.code)
+			got, err := Parse(tc.code)
 			if err != nil {
 				t.Fatalf("NewAST returned unexpected error: %v", err)
 			}
@@ -209,92 +210,92 @@ for x in range(1, 20) {
 }
 `
 
-	want := &AST{
+	want := &ast.AST{
 		Nodes: execute.Block{
-			&FuncNode{
+			&ast.FuncNode{
 				Name:     "hailstone",
 				ArgNames: []string{"x"},
 				Body: execute.Block{
-					&VarNode{
+					&ast.VarNode{
 						Name: "l",
-						Value: &ListNode{
+						Value: &ast.ListNode{
 							Values: []execute.Expression{
-								&VariableNode{Name: "x"},
+								&ast.VariableNode{Name: "x"},
 							},
 						},
 					},
-					&WhileNode{
-						Cond: &BinaryOpNode{
+					&ast.WhileNode{
+						Cond: &ast.BinaryOpNode{
 							Op:    operators.BinOp_NEQ,
-							Left:  &VariableNode{Name: "x"},
-							Right: &ConstantNode{Value: types.NewInt(1)},
+							Left:  &ast.VariableNode{Name: "x"},
+							Right: &ast.ConstantNode{Value: types.NewInt(1)},
 						},
 						Body: execute.Block{
-							&IfNode{
-								Cond: &BinaryOpNode{
+							&ast.IfNode{
+								Cond: &ast.BinaryOpNode{
 									Op: operators.BinOp_EQ,
-									Left: &BinaryOpNode{
+									Left: &ast.BinaryOpNode{
 										Op:    operators.BinOp_MOD,
-										Left:  &VariableNode{Name: "x"},
-										Right: &ConstantNode{Value: types.NewInt(2)},
+										Left:  &ast.VariableNode{Name: "x"},
+										Right: &ast.ConstantNode{Value: types.NewInt(2)},
 									},
-									Right: &ConstantNode{Value: types.NewInt(0)},
+									Right: &ast.ConstantNode{Value: types.NewInt(0)},
 								},
 								Body: execute.Block{
-									&BinaryOpNode{
+									&ast.BinaryOpNode{
 										Op:    operators.BinOp_RFDIV,
-										Left:  &VariableNode{Name: "x"},
-										Right: &ConstantNode{Value: types.NewInt(2)},
+										Left:  &ast.VariableNode{Name: "x"},
+										Right: &ast.ConstantNode{Value: types.NewInt(2)},
 									},
 								},
 								ElseBody: execute.Block{
-									&AssignmentNode{
-										Left: assignmentTarget{variable: "x"},
-										Right: &BinaryOpNode{
+									&ast.AssignmentNode{
+										Left: ast.AssignmentTarget{Variable: "x"},
+										Right: &ast.BinaryOpNode{
 											Op: operators.BinOp_PLUS,
-											Left: &BinaryOpNode{
+											Left: &ast.BinaryOpNode{
 												Op:    operators.BinOp_TIMES,
-												Left:  &ConstantNode{Value: types.NewInt(3)},
-												Right: &VariableNode{Name: "x"},
+												Left:  &ast.ConstantNode{Value: types.NewInt(3)},
+												Right: &ast.VariableNode{Name: "x"},
 											},
-											Right: &ConstantNode{Value: types.NewInt(1)},
+											Right: &ast.ConstantNode{Value: types.NewInt(1)},
 										},
 									},
 								},
 							},
-							&CallNode{
-								Func: &AttributeNode{
-									Left:  &VariableNode{Name: "l"},
+							&ast.CallNode{
+								Func: &ast.AttributeNode{
+									Left:  &ast.VariableNode{Name: "l"},
 									Right: "append",
 								},
 								Args: []execute.Expression{
-									&VariableNode{Name: "x"},
+									&ast.VariableNode{Name: "x"},
 								},
 							},
 						},
 					},
-					&ReturnNode{
-						Value: &VariableNode{Name: "l"},
+					&ast.ReturnNode{
+						Value: &ast.VariableNode{Name: "l"},
 					},
 				},
 			},
-			&ForNode{
+			&ast.ForNode{
 				IterName: "x",
-				Iter: &CallNode{
-					Func: &VariableNode{Name: "range"},
+				Iter: &ast.CallNode{
+					Func: &ast.VariableNode{Name: "range"},
 					Args: []execute.Expression{
-						&ConstantNode{Value: types.NewInt(1)},
-						&ConstantNode{Value: types.NewInt(20)},
+						&ast.ConstantNode{Value: types.NewInt(1)},
+						&ast.ConstantNode{Value: types.NewInt(20)},
 					},
 				},
 				Body: execute.Block{
-					&CallNode{
-						Func: &VariableNode{Name: "print"},
+					&ast.CallNode{
+						Func: &ast.VariableNode{Name: "print"},
 						Args: []execute.Expression{
-							&CallNode{
-								Func: &VariableNode{Name: "hailstone"},
+							&ast.CallNode{
+								Func: &ast.VariableNode{Name: "hailstone"},
 								Args: []execute.Expression{
-									&VariableNode{Name: "x"},
+									&ast.VariableNode{Name: "x"},
 								},
 							},
 						},
@@ -304,7 +305,7 @@ for x in range(1, 20) {
 		},
 	}
 
-	got, err := NewAST(code)
+	got, err := Parse(code)
 	if err != nil {
 		t.Fatalf("NewAST returned unexpected error: %v", err)
 	}
@@ -330,114 +331,114 @@ for x in range(20) {
 }	
 `
 
-	want := &AST{
+	want := &ast.AST{
 		Nodes: execute.Block{
-			&FuncNode{
+			&ast.FuncNode{
 				Name:     "fib",
 				ArgNames: []string{"n"},
 				Body: execute.Block{
-					&VarNode{
+					&ast.VarNode{
 						Name: "m",
-						Value: &MapNode{
+						Value: &ast.MapNode{
 							Values: [][]execute.Expression{
 								{
-									&ConstantNode{Value: types.NewInt(0)},
-									&ConstantNode{Value: types.NewInt(0)},
+									&ast.ConstantNode{Value: types.NewInt(0)},
+									&ast.ConstantNode{Value: types.NewInt(0)},
 								},
 								{
-									&ConstantNode{Value: types.NewInt(1)},
-									&ConstantNode{Value: types.NewInt(1)},
+									&ast.ConstantNode{Value: types.NewInt(1)},
+									&ast.ConstantNode{Value: types.NewInt(1)},
 								},
 							},
 						},
 					},
-					&ForNode{
+					&ast.ForNode{
 						IterName: "i",
-						Iter: &CallNode{
-							Func: &VariableNode{Name: "range"},
+						Iter: &ast.CallNode{
+							Func: &ast.VariableNode{Name: "range"},
 							Args: []execute.Expression{
-								&ConstantNode{Value: types.NewInt(2)},
-								&BinaryOpNode{
+								&ast.ConstantNode{Value: types.NewInt(2)},
+								&ast.BinaryOpNode{
 									Op:    operators.BinOp_PLUS,
-									Left:  &VariableNode{Name: "n"},
-									Right: &ConstantNode{Value: types.NewInt(1)},
+									Left:  &ast.VariableNode{Name: "n"},
+									Right: &ast.ConstantNode{Value: types.NewInt(1)},
 								},
 							},
 						},
 						Body: execute.Block{
-							&VarNode{
+							&ast.VarNode{
 								Name: "mi",
-								Value: &BinaryOpNode{
+								Value: &ast.BinaryOpNode{
 									Op: operators.BinOp_PLUS,
-									Left: &CallNode{
-										Func: &AttributeNode{
-											Left:  &VariableNode{Name: "m"},
+									Left: &ast.CallNode{
+										Func: &ast.AttributeNode{
+											Left:  &ast.VariableNode{Name: "m"},
 											Right: "get",
 										},
 										Args: []execute.Expression{
-											&BinaryOpNode{
+											&ast.BinaryOpNode{
 												Op:    operators.BinOp_MINUS,
-												Left:  &VariableNode{Name: "i"},
-												Right: &ConstantNode{Value: types.NewInt(1)},
+												Left:  &ast.VariableNode{Name: "i"},
+												Right: &ast.ConstantNode{Value: types.NewInt(1)},
 											},
 										},
 									},
-									Right: &CallNode{
-										Func: &AttributeNode{
-											Left:  &VariableNode{Name: "m"},
+									Right: &ast.CallNode{
+										Func: &ast.AttributeNode{
+											Left:  &ast.VariableNode{Name: "m"},
 											Right: "get",
 										},
 										Args: []execute.Expression{
-											&BinaryOpNode{
+											&ast.BinaryOpNode{
 												Op:    operators.BinOp_MINUS,
-												Left:  &VariableNode{Name: "i"},
-												Right: &ConstantNode{Value: types.NewInt(2)},
+												Left:  &ast.VariableNode{Name: "i"},
+												Right: &ast.ConstantNode{Value: types.NewInt(2)},
 											},
 										},
 									},
 								},
 							},
-							&CallNode{
-								Func: &AttributeNode{
-									Left:  &VariableNode{Name: "m"},
+							&ast.CallNode{
+								Func: &ast.AttributeNode{
+									Left:  &ast.VariableNode{Name: "m"},
 									Right: "set",
 								},
 								Args: []execute.Expression{
-									&VariableNode{Name: "i"},
-									&VariableNode{Name: "mi"},
+									&ast.VariableNode{Name: "i"},
+									&ast.VariableNode{Name: "mi"},
 								},
 							},
 						},
 					},
-					&ReturnNode{
-						Value: &CallNode{
-							Func: &AttributeNode{
-								Left:  &VariableNode{Name: "m"},
+					&ast.ReturnNode{
+						Value: &ast.CallNode{
+							Func: &ast.AttributeNode{
+								Left:  &ast.VariableNode{Name: "m"},
 								Right: "get",
 							},
 							Args: []execute.Expression{
-								&VariableNode{Name: "n"},
+								&ast.VariableNode{Name: "n"},
 							},
 						},
 					},
 				},
 			},
-			&ForNode{
+			&ast.ForNode{
 				IterName: "x",
-				Iter: &CallNode{
-					Func: &VariableNode{Name: "range"},
+				Iter: &ast.CallNode{
+					Func: &ast.VariableNode{Name: "range"},
 					Args: []execute.Expression{
-						&ConstantNode{Value: types.NewInt(20)},
+						&ast.ConstantNode{Value: types.NewInt(20)},
 					},
 				},
 				Body: execute.Block{
-					&CallNode{
-						Func: &VariableNode{Name: "print"},
+					&ast.CallNode{
+						Func: &ast.VariableNode{Name: "print"},
 						Args: []execute.Expression{
-							&CallNode{
-								Func: &VariableNode{Name: "fib"},
+							&ast.CallNode{
+								Func: &ast.VariableNode{Name: "fib"},
 								Args: []execute.Expression{
-									&VariableNode{Name: "x"},
+									&ast.VariableNode{Name: "x"},
 								},
 							},
 						},
@@ -447,7 +448,7 @@ for x in range(20) {
 		},
 	}
 
-	got, err := NewAST(code)
+	got, err := Parse(code)
 	if err != nil {
 		t.Fatalf("NewAST returned unexpected error: %v", err)
 	}

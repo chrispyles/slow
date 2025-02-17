@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	makeAST = parser.NewAST
+	makeAST = parser.Parse
 	println = printer.Println
 )
 
