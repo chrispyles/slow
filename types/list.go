@@ -8,6 +8,33 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type listType struct{}
+
+func (t *listType) IsNumeric() bool {
+	return false
+}
+
+func (t *listType) New(v execute.Value) (execute.Value, error) {
+	if v == nil {
+		return NewList(nil), nil
+	}
+	panic("listType.New() is not supported with a non-nil argument")
+}
+
+func (t *listType) String() string {
+	return "list"
+}
+
+var ListType = &listType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 var listMethods = map[string]func(*List) execute.Value{
 	"append": func(v *List) execute.Value {
 		return NewGoFunc("list.append", func(vs ...execute.Value) (execute.Value, error) {

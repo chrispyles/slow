@@ -7,6 +7,34 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type intType struct{}
+
+func (t *intType) IsNumeric() bool {
+	return true
+}
+
+func (t *intType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToInt()
+	if err != nil {
+		return nil, err
+	}
+	return NewInt(vc), nil
+}
+
+func (t *intType) String() string {
+	return "int"
+}
+
+var IntType = &intType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 type Int struct {
 	value int64
 }

@@ -9,6 +9,33 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type mapType struct{}
+
+func (t *mapType) IsNumeric() bool {
+	return false
+}
+
+func (t *mapType) New(v execute.Value) (execute.Value, error) {
+	if v == nil {
+		return NewMap(), nil
+	}
+	panic("mapType.New() is not supported with a non-nil argument")
+}
+
+func (t *mapType) String() string {
+	return "map"
+}
+
+var MapType = &mapType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 var mapMethods = map[string]func(*Map) execute.Value{
 	"get": func(v *Map) execute.Value {
 		return NewGoFunc("map.get", func(vs ...execute.Value) (execute.Value, error) {

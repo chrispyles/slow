@@ -15,7 +15,6 @@ type Iterator interface {
 
 type Type interface {
 	IsNumeric() bool
-	Matches(Type) bool
 	New(Value) (Value, error)
 	String() string
 }

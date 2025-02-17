@@ -8,6 +8,34 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type floatType struct{}
+
+func (t *floatType) IsNumeric() bool {
+	return true
+}
+
+func (t *floatType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToFloat()
+	if err != nil {
+		return nil, err
+	}
+	return NewFloat(vc), nil
+}
+
+func (t *floatType) String() string {
+	return "float"
+}
+
+var FloatType = &floatType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 type Float struct {
 	value float64
 }

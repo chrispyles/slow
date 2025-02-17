@@ -58,6 +58,9 @@ var (
 	symbolRegex = regexp.MustCompile(`^[A-Za-z_]\w*$`)
 )
 
+// parser parses tokens from the buffer into the next complete expression.
+type parser func(*Buffer) (execute.Expression, error)
+
 var keywords map[string]parser
 
 // reservedKeywords is a set of keywords that cannot be used as symbols.
@@ -91,12 +94,14 @@ var reservedKeywords = map[string]bool{
 	kw_NULL:  true,
 
 	// types (whose names don't correspond to another keyword)
-	"bool":  true,
-	"float": true,
-	"int":   true,
-	"list":  true,
-	"str":   true,
-	"uint":  true,
+	types.BoolType.String():  true,
+	types.BytesType.String(): true,
+	types.FloatType.String(): true,
+	types.IntType.String():   true,
+	types.ListType.String():  true,
+	types.MapType.String():   true,
+	types.StrType.String():   true,
+	types.UintType.String():  true,
 }
 
 // stringEscapeSequences maps raw escape sequences that can be used in string literals to the
@@ -109,7 +114,15 @@ var stringEscapeSequences = map[string]string{
 	`\"`: "\"",
 }
 
-func parse(s string) (execute.Block, error) {
+func Parse(s string) (execute.AST, error) {
+	b, err := doParse(s)
+	if err != nil {
+		return nil, err
+	}
+	return ast.New(b), nil
+}
+
+func doParse(s string) (execute.Block, error) {
 	var b execute.Block
 	buf := NewBuffer(s)
 	if *config.Debug {
@@ -129,9 +142,6 @@ func parse(s string) (execute.Block, error) {
 	}
 	return b, nil
 }
-
-// parser parses tokens from the buffer into the next complete expression.
-type parser func(*Buffer) (execute.Expression, error)
 
 func readBuffer(buf *Buffer) (execute.Expression, error) {
 	buf.ConsumeNewlines()

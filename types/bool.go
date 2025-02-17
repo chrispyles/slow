@@ -7,6 +7,30 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type boolType struct{}
+
+func (t *boolType) IsNumeric() bool {
+	return true
+}
+
+func (t *boolType) New(v execute.Value) (execute.Value, error) {
+	return NewBool(v.ToBool()), nil
+}
+
+func (t *boolType) String() string {
+	return "bool"
+}
+
+var BoolType = &boolType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 type Bool struct {
 	value bool
 }

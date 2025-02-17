@@ -7,6 +7,30 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type funcType struct{}
+
+func (t *funcType) IsNumeric() bool {
+	return false
+}
+
+func (t *funcType) New(v execute.Value) (execute.Value, error) {
+	panic("funcType.New() is not supported")
+}
+
+func (t *funcType) String() string {
+	return "func"
+}
+
+var FuncType = &funcType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 // ReturnError is an error that indicates that a return statement has been executed.
 type ReturnError struct {
 	Value execute.Value

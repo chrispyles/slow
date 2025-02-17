@@ -5,6 +5,30 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type nullType struct{}
+
+func (t *nullType) IsNumeric() bool {
+	return false
+}
+
+func (t *nullType) New(v execute.Value) (execute.Value, error) {
+	panic("nullType.New() is not supported")
+}
+
+func (t *nullType) String() string {
+	return "null"
+}
+
+var NullType = &nullType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 // null is a struct meant to be used as a singleton to represent a null value.
 type null struct{}
 

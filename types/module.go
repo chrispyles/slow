@@ -7,6 +7,30 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type moduleType struct{}
+
+func (t *moduleType) IsNumeric() bool {
+	return false
+}
+
+func (t *moduleType) New(v execute.Value) (execute.Value, error) {
+	panic("moduleType.New() is not supported")
+}
+
+func (t *moduleType) String() string {
+	return "module"
+}
+
+var ModuleType = &moduleType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 type Module struct {
 	name string
 	env  *execute.Environment

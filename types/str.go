@@ -8,6 +8,34 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type strType struct{}
+
+func (t *strType) IsNumeric() bool {
+	return false
+}
+
+func (t *strType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToStr()
+	if err != nil {
+		return nil, err
+	}
+	return NewStr(vc), nil
+}
+
+func (t *strType) String() string {
+	return "str"
+}
+
+var StrType = &strType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 type Str struct {
 	value string
 }

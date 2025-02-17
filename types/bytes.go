@@ -11,6 +11,34 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type bytesType struct{}
+
+func (t *bytesType) IsNumeric() bool {
+	return true
+}
+
+func (t *bytesType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToBytes()
+	if err != nil {
+		return nil, err
+	}
+	return NewBytes(vc), nil
+}
+
+func (t *bytesType) String() string {
+	return "bytes"
+}
+
+var BytesType = &bytesType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 type Bytes struct {
 	value []byte
 }

@@ -7,6 +7,34 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type uintType struct{}
+
+func (t *uintType) IsNumeric() bool {
+	return true
+}
+
+func (t *uintType) New(v execute.Value) (execute.Value, error) {
+	vc, err := v.ToUint()
+	if err != nil {
+		return nil, err
+	}
+	return NewUint(vc), nil
+}
+
+func (t *uintType) String() string {
+	return "uint"
+}
+
+var UintType = &uintType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 type Uint struct {
 	value uint64
 }

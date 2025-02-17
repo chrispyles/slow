@@ -14,13 +14,6 @@ func (m *MockType) IsNumeric() bool {
 	return m.IsNumericRet
 }
 
-func (m *MockType) Matches(t execute.Type) bool {
-	if m.MatchingTypes == nil {
-		return false
-	}
-	return m.MatchingTypes[t]
-}
-
 func (m *MockType) New(t execute.Value) (execute.Value, error) {
 	return &MockValue{}, nil
 }

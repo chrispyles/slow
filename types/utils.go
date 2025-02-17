@@ -8,6 +8,22 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+var allTypes = []execute.Type{
+	BoolType,
+	BytesType,
+	FloatType,
+	FuncType,
+	GeneratorType,
+	IntType,
+	IteratorType,
+	ListType,
+	MapType,
+	ModuleType,
+	NullType,
+	StrType,
+	UintType,
+}
+
 var typeHierarchy = map[execute.Type]int{
 	FloatType: 0,
 	IntType:   1,

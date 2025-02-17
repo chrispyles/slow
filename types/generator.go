@@ -5,6 +5,30 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
+// -------------------------------------------------------------------------------------------------
+// Type definition
+// -------------------------------------------------------------------------------------------------
+
+type generatorType struct{}
+
+func (t *generatorType) IsNumeric() bool {
+	return false
+}
+
+func (t *generatorType) New(v execute.Value) (execute.Value, error) {
+	panic("generatorType.New() is not supported")
+}
+
+func (t *generatorType) String() string {
+	return "generator"
+}
+
+var GeneratorType = &generatorType{}
+
+// -------------------------------------------------------------------------------------------------
+// Type implementation
+// -------------------------------------------------------------------------------------------------
+
 // Generator is a type that wraps an execute.Iterator and satisfies both the execute.Iterator and
 // execute.Value interfaces.
 type Generator struct {
