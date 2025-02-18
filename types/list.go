@@ -37,18 +37,41 @@ var ListType = &listType{}
 
 var listMethods = map[string]func(*List) execute.Value{
 	"append": func(v *List) execute.Value {
-		return NewGoFunc("list.append", func(vs ...execute.Value) (execute.Value, error) {
+		name := "list.append"
+		return NewGoFunc(name, func(vs ...execute.Value) (execute.Value, error) {
 			if got, want := len(vs), 1; got != want {
-				return nil, errors.CallError("list.append", got, want)
+				return nil, errors.CallError(name, got, want)
+			}
+			if v.immutable {
+				return nil, errors.NewValueError("list is immutable")
 			}
 			v.values = append(v.values, vs[0])
 			return Null, nil
 		})
 	},
+	"to_immutable": func(v *List) execute.Value {
+		name := "list.to_immutable"
+		return NewGoFunc(name, func(vs ...execute.Value) (execute.Value, error) {
+			if got, want := len(vs), 0; got != want {
+				return nil, errors.CallError(name, got, want)
+			}
+			return &List{v.values, true}, nil
+		})
+	},
+	"to_mutable": func(v *List) execute.Value {
+		name := "list.to_mutable"
+		return NewGoFunc(name, func(vs ...execute.Value) (execute.Value, error) {
+			if got, want := len(vs), 0; got != want {
+				return nil, errors.CallError(name, got, want)
+			}
+			return &List{v.values, false}, nil
+		})
+	},
 }
 
 type List struct {
-	values []execute.Value
+	values    []execute.Value
+	immutable bool
 }
 
 func NewList(vs []execute.Value) *List {
@@ -103,6 +126,9 @@ func (v *List) Length() (uint64, error) {
 }
 
 func (v *List) SetAttribute(a string, _ execute.Value) error {
+	if v.immutable {
+		return errors.NewValueError("list is immutable")
+	}
 	if v.HasAttribute(a) {
 		return errors.AssignmentError(v.Type(), a)
 	}
@@ -110,6 +136,9 @@ func (v *List) SetAttribute(a string, _ execute.Value) error {
 }
 
 func (v *List) SetIndex(i execute.Value, val execute.Value) error {
+	if v.immutable {
+		return errors.NewValueError("list is immutable")
+	}
 	idx, err := numericIndex(i, v.Type())
 	if err != nil {
 		return err

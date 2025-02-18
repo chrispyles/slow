@@ -331,6 +331,8 @@ You can also specify elements when writing a list literal:
 l = [1, 2, 3]
 ```
 
+Lists can be either mutable or immutable; all lists are mutable by default, by an immutable copy of any list can be created with the `to_immutable` method described below. (Similarly, a mutable copy of any list can be created with the `to_mutable` method.) Immutable lists do not allow any modification (e.g. index assignment, `list.append`). However, making an immutable list does not make its elements themselves immutable.
+
 #### List Methods
 
 The `list` type has several built-in methods, each of which is described below.
@@ -364,6 +366,38 @@ true
 true
 ```
 
+##### `list.to_mutable`
+
+The `to_mutable` method of `list` creates a mutable copy of the list. This method can be used on any list (immutable or mutable).
+
+```
+-> var l1 = [1, 2, 3]
+[1, 2, 3]
+-> var l2 = l1.to_mutable()
+[1, 2, 3]
+-> l2.append(4)
+-> l1
+[1, 2, 3]
+-> l2
+[1, 2, 3, 4]
+```
+
+##### `list.to_immutable`
+
+The `to_immutable` method of `list` creates an immutable copy of the list. This method can be used on any list (mutable or immutable).
+
+```
+-> var l1 = [1, 2, 3]
+[1, 2, 3]
+-> var l2 = l1.to_immutable()
+[1, 2, 3]
+-> l1.append(4)
+-> l1
+[1, 2, 3, 3]
+-> l2.append(4)
+ValueError: list is immutable
+```
+
 ### Maps
 
 Slow has a built-in `map` type that is implemented using a hash table constructed from Go's `map` type. Map literals are declared using curly brackets:
@@ -379,6 +413,8 @@ m = {1: 2, 3: 4, true: 1, "foo": "bar"}
 ```
 
 Only hashable types may be used as `map` keys; the only types that are currently hashable are primitives. Any type may be used as a value in a `map`.
+
+Maps can be either mutable or immutable; all maps are mutable by default, by an immutable copy of any map can be created with the `to_immutable` method described below. (Similarly, a mutable copy of any map can be created with the `to_mutable` method.) Immutable maps do not allow any modification (e.g. index assignment, `map.set`). However, making an immutable map does not make its elements themselves immutable.
 
 #### Map Methods
 
@@ -419,6 +455,39 @@ true
 ```
 
 The provided key must be of a hashable type.
+
+##### `map.to_mutable`
+
+The `to_mutable` method of `map` creates a mutable copy of the map. This method can be used on any map (immutable or mutable).
+
+```
+-> var m1 = {1: 2}
+{1: 2}
+-> var m2 = m1.to_mutable()
+{1: 2}
+-> m2.set(3, 4)
+-> m1
+{1: 2}
+-> m2
+{1: 2, 3: 4}
+```
+
+##### `map.to_immutable`
+
+The `to_immutable` method of `map` creates an immutable copy of the map. This method can be used on any map (mutable or immutable).
+
+```
+-> var m1 = {1, 2}
+{1: 2}
+-> var m2 = m1.to_immutable()
+{1: 2}
+-> m1.set(3, 4)
+false
+-> m1
+{1: 2, 3: 4}
+-> m2.set(3, 4)
+ValueError: map is immutable
+```
 
 ### Indexing
 

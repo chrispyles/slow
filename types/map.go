@@ -57,15 +57,39 @@ var mapMethods = map[string]func(*Map) execute.Value{
 			if got, want := len(vs), 2; got != want {
 				return nil, errors.CallError("map.set", got, want)
 			}
+			if v.immutable {
+				return nil, errors.NewValueError("map is immutable")
+			}
 			return v.Set(vs[0], vs[1])
+		})
+	},
+	"to_immutable": func(v *Map) execute.Value {
+		name := "map.to_immutable"
+		return NewGoFunc(name, func(vs ...execute.Value) (execute.Value, error) {
+			if got, want := len(vs), 0; got != want {
+				return nil, errors.CallError(name, got, want)
+			}
+			return &Map{v.seed, v.cloneEntries(), v.size, true}, nil
+		})
+	},
+	"to_mutable": func(v *Map) execute.Value {
+		name := "map.to_mutable"
+		return NewGoFunc(name, func(vs ...execute.Value) (execute.Value, error) {
+			if got, want := len(vs), 0; got != want {
+				return nil, errors.CallError(name, got, want)
+			}
+			return &Map{v.seed, v.cloneEntries(), v.size, false}, nil
 		})
 	},
 }
 
+type mapEntries map[uint64][]*mapEntry
+
 type Map struct {
-	seed    maphash.Seed
-	entries map[uint64][]*mapEntry
-	size    uint64
+	seed      maphash.Seed
+	entries   mapEntries
+	size      uint64
+	immutable bool
 }
 
 type mapEntry struct {
@@ -75,6 +99,17 @@ type mapEntry struct {
 
 func NewMap() *Map {
 	return &Map{seed: maphash.MakeSeed(), entries: make(map[uint64][]*mapEntry)}
+}
+
+func (v *Map) cloneEntries() mapEntries {
+	entries := make(map[uint64][]*mapEntry)
+	for k, vs := range v.entries {
+		for _, v := range vs {
+			vCopy := *v
+			entries[k] = append(entries[k], &vCopy)
+		}
+	}
+	return entries
 }
 
 func (v *Map) hash(val execute.Value) (uint64, error) {
@@ -119,6 +154,9 @@ func (v *Map) Has(key execute.Value) (bool, error) {
 }
 
 func (v *Map) Set(key execute.Value, value execute.Value) (execute.Value, error) {
+	if v.immutable {
+		return nil, errors.NewValueError("map is immutable")
+	}
 	h, err := v.hash(key)
 	if err != nil {
 		return nil, err
@@ -181,6 +219,9 @@ func (v *Map) Length() (uint64, error) {
 }
 
 func (v *Map) SetAttribute(a string, _ execute.Value) error {
+	if v.immutable {
+		return errors.NewValueError("map is immutable")
+	}
 	if v.HasAttribute(a) {
 		return errors.AssignmentError(v.Type(), a)
 	}
@@ -188,6 +229,9 @@ func (v *Map) SetAttribute(a string, _ execute.Value) error {
 }
 
 func (v *Map) SetIndex(i execute.Value, val execute.Value) error {
+	if v.immutable {
+		return errors.NewValueError("map is immutable")
+	}
 	_, err := v.Set(i, val)
 	return err
 }
