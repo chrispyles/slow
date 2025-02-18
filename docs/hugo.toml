@@ -1,0 +1,7 @@
+baseURL = 'https://slowlang.dev/'
+languageCode = 'en-us'
+title = 'The Slow Programming Language'
+theme = 'hugo-book'
+
+[markup.goldmark.renderer]
+unsafe = true

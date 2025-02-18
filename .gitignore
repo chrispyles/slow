@@ -12,3 +12,5 @@
 *.cov
 node_modules
 .vscode
+/docs/public
+/docs/resources
