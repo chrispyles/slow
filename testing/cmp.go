@@ -1,10 +1,12 @@
 package testing
 
 import (
+	"testing"
 	"unsafe"
 
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/testing/helpers"
 	"github.com/chrispyles/slow/types"
 	"github.com/google/go-cmp/cmp"
 )
@@ -38,4 +40,8 @@ func EquateFuncs() cmp.Option {
 		py := *(*unsafe.Pointer)(unsafe.Pointer(&y))
 		return px == py
 	})
+}
+
+func CheckDiff(t *testing.T, name string, want, got interface{}, opts ...cmp.Option) {
+	helpers.CheckDiff(t, name, want, got, AllowUnexported())
 }
