@@ -621,7 +621,7 @@ Because every statement in Slow evaluates to a value, the return value of the la
 "odd"
 ```
 
-Slow also supports `switch` statements, which match a value to a series of possible `case`s using the logic of the `==` operator. Unlike many other languages, Slow's `switch` cases **do not** fall through by default; the `fallthrough` keyword must be used to trigger fall through. Slow uses curly brackets to wrap `case` bodies.
+Slow also supports `switch` statements, which match a value to a series of possible `case`s using the logic of the `==` operator. Unlike many other languages, Slow's `switch` cases **do not** fall through by default; the `fallthrough` keyword must be used to trigger fall through. Slow uses curly brackets to wrap `case` bodies. An optional `default` case may be added after all other cases which is executed if no other case is matched.
 
 ```
 switch x % 3 {
@@ -631,6 +631,9 @@ switch x % 3 {
   case 1 { fallthrough }
   case 2 {
     print("x is not a multiple of 3")
+  }
+  default {
+    print("x is not an int")
   }
 }
 ```

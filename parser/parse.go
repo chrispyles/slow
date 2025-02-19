@@ -298,19 +298,23 @@ func parseArgList(buf *Buffer, endToken string) ([]execute.Expression, error) {
 	next := buf.Current()
 	var args []execute.Expression
 	for next != endToken {
+		buf.ConsumeNewlines()
 		expr, err := parseExpressionStart(buf)
 		if err != nil {
 			return nil, err
 		}
 		args = append(args, expr)
-		next = buf.Current()
+		next = buf.Pop()
 		if next == endToken {
+			// Move the buffer back one since endToken is popped again when the loop exits.
+			buf.MoveBack()
 			break
 		} else if next != "," {
+			buf.MoveBack()
 			return nil, errors.UnexpectedSymbolError(buf, next, ",")
 		}
-		buf.Pop() // remove "," from the buffer
 		buf.ConsumeNewlines()
+		next = buf.Current()
 	}
 	buf.Pop() // remove endToken from the buffer
 	return args, nil
@@ -667,8 +671,53 @@ func parseString(buf *Buffer, tkn string) (execute.Expression, error) {
 }
 
 func parseSwitch(buf *Buffer) (execute.Expression, error) {
-	// TODO
-	return nil, nil
+	expr, err := parseExpressionStart(buf)
+	if err != nil {
+		return nil, err
+	}
+	if c := buf.Pop(); c != "{" {
+		buf.MoveBack()
+		return nil, errors.UnexpectedSymbolError(buf, c, "{")
+	}
+	cases := []ast.SwitchCase{}
+	var defaultCase execute.Block
+	for true {
+		buf.ConsumeNewlines()
+		if c := buf.Current(); c == "}" {
+			break
+		}
+		var isDefaultCase bool
+		if c := buf.Pop(); c == kw_DEFAULT {
+			isDefaultCase = true
+		} else if c != kw_CASE {
+			buf.MoveBack()
+			return nil, errors.UnexpectedSymbolError(buf, c, kw_CASE)
+		}
+		if !isDefaultCase && defaultCase != nil {
+			buf.MoveBack()
+			return nil, errors.NewSyntaxError(buf, "default must be the last case in the switch statement body", buf.Current())
+		}
+		var expr execute.Expression
+		if !isDefaultCase {
+			expr, err = parseExpressionStart(buf)
+			if err != nil {
+				return nil, err
+			}
+		}
+		block, err := parseBlock(buf)
+		if err != nil {
+			return nil, err
+		}
+		if isDefaultCase {
+			defaultCase = block
+		} else {
+			cases = append(cases, ast.SwitchCase{CaseExpr: expr, Body: block})
+		}
+	}
+	if err := expectClose(buf, "}"); err != nil {
+		return nil, err
+	}
+	return &ast.SwitchNode{Value: expr, Cases: cases, DefaultCase: defaultCase}, nil
 }
 
 func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expression, error) {

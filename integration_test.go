@@ -17,7 +17,13 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	cmd := exec.Command("make", "buildcov", fmt.Sprintf("BUILDCOVOUT=%s", binaryName))
+	covEnabled := os.Getenv(coverDirEnvVar) != ""
+	var cmd *exec.Cmd
+	if covEnabled {
+		cmd = exec.Command("make", "buildcov", fmt.Sprintf("BUILDCOVOUT=%s", binaryName))
+	} else {
+		cmd = exec.Command("make", "build_integration_test", fmt.Sprintf("BUILDCOVOUT=%s", binaryName))
+	}
 	if err := cmd.Run(); err != nil {
 		panic(err)
 	}

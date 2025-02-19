@@ -10,13 +10,18 @@ build:
 run: build
 	build/slow
 
-test: export SLOW_TESTING_GOCOVERDIR := $(COVERDIR)
+
 test:
 	@mkdir -p $(COVERDIR)
-	@go test -v ./...
+	@go test -shuffle=off -v ./...
 
-# The buildcov rule requires the user to set BUILDCOVOUT to the path that the output binary should
-# be written to; for integration tests, this is handled in integration_test.go.
+# The build_integration_test and buildcov rules require the user to set BUILDCOVOUT to the path that
+# the output binary should be written to; for integration tests, this is handled in
+# integration_test.go.
+
+build_integration_test:
+	@go build -o $(BUILDCOVOUT) .
+
 buildcov:
 	@go build $(COVERAGEARGS) -o $(BUILDCOVOUT) .
 

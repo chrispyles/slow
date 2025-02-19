@@ -4,14 +4,14 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
-type switchCase struct {
+type SwitchCase struct {
 	CaseExpr execute.Expression
 	Body     execute.Block
 }
 
 type SwitchNode struct {
 	Value       execute.Expression
-	Cases       []switchCase
+	Cases       []SwitchCase
 	DefaultCase execute.Block
 }
 
