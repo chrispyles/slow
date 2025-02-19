@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/chrispyles/slow/errors"
@@ -24,6 +25,15 @@ func TestBoolType(t *testing.T) {
 }
 
 func TestBool(t *testing.T) {
+	t.Run("CloneIfPrimitive", func(t *testing.T) {
+		in := NewBool(true)
+		got := in.CloneIfPrimitive()
+		testhelpers.CheckDiff(t, "CloneIfPrimitive()", in, got, cmp.AllowUnexported(*in))
+		if reflect.ValueOf(in).Pointer() == reflect.ValueOf(got).Pointer() {
+			t.Errorf("CloneIfPrimitive() did not create a clone")
+		}
+	})
+
 	t.Run("CompareTo", func(t *testing.T) {
 		for _, tc := range []struct {
 			in     *Bool

@@ -17,6 +17,10 @@ func TestFuncType(t *testing.T) {
 }
 
 func TestFunc(t *testing.T) {
+	t.Run("CloneIfPrimitive", func(t *testing.T) {
+		// TODO
+	})
+
 	t.Run("CompareTo", func(t *testing.T) {
 		// TODO
 	})

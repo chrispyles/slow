@@ -17,6 +17,10 @@ func TestMapType(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
+	t.Run("CloneIfPrimitive", func(t *testing.T) {
+		// TODO
+	})
+
 	t.Run("CompareTo", func(t *testing.T) {
 		// TODO
 	})

@@ -17,6 +17,10 @@ func TestUintType(t *testing.T) {
 }
 
 func TestUint(t *testing.T) {
+	t.Run("CloneIfPrimitive", func(t *testing.T) {
+		// TODO
+	})
+
 	t.Run("CompareTo", func(t *testing.T) {
 		// TODO
 	})

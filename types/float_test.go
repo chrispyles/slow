@@ -17,6 +17,10 @@ func TestFloatType(t *testing.T) {
 }
 
 func TestFloat(t *testing.T) {
+	t.Run("CloneIfPrimitive", func(t *testing.T) {
+		// TODO
+	})
+
 	t.Run("CompareTo", func(t *testing.T) {
 		// TODO
 	})
