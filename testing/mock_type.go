@@ -5,9 +5,10 @@ import (
 )
 
 type MockType struct {
-	IsNumericRet  bool
-	MatchingTypes map[execute.Type]bool
-	StringRet     string
+	IsNumericRet bool
+	NewRet       execute.Value
+	NewErr       error
+	StringRet    string
 }
 
 func (m *MockType) IsNumeric() bool {
@@ -15,6 +16,12 @@ func (m *MockType) IsNumeric() bool {
 }
 
 func (m *MockType) New(t execute.Value) (execute.Value, error) {
+	if m.NewErr != nil {
+		return nil, m.NewErr
+	}
+	if m.NewRet != nil {
+		return m.NewRet, nil
+	}
 	return &MockValue{}, nil
 }
 

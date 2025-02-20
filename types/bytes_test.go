@@ -1,9 +1,12 @@
 package types
 
 import (
+	"reflect"
 	"testing"
 
+	testhelpers "github.com/chrispyles/slow/testing/helpers"
 	typestesting "github.com/chrispyles/slow/types/internal/testing"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestBytesType(t *testing.T) {
@@ -18,11 +21,16 @@ func TestBytesType(t *testing.T) {
 
 func TestBytes(t *testing.T) {
 	t.Run("CloneIfPrimitive", func(t *testing.T) {
-		// TODO
+		in := NewBytes(nil)
+		got := in.CloneIfPrimitive()
+		testhelpers.CheckDiff(t, "CloneIfPrimitive()", in, got, cmp.AllowUnexported(*in))
+		if reflect.ValueOf(in).Pointer() == reflect.ValueOf(got).Pointer() {
+			t.Errorf("CloneIfPrimitive() did not create a clone")
+		}
 	})
 
 	t.Run("CompareTo", func(t *testing.T) {
-		// TODO
+
 	})
 
 	t.Run("Equals", func(t *testing.T) {

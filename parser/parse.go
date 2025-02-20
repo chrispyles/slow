@@ -44,6 +44,9 @@ const (
 	kw_VAR   = "var"
 	kw_CONST = "const"
 
+	// type casts
+	kw_AS = "as"
+
 	// values
 	kw_TRUE  = "true"
 	kw_FALSE = "false"
@@ -87,6 +90,9 @@ var reservedKeywords = map[string]bool{
 	// declarations
 	kw_VAR:   true,
 	kw_CONST: true,
+
+	// type casts
+	kw_AS: true,
 
 	// values
 	kw_TRUE:  true,
@@ -219,6 +225,9 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 	}
 	if op, ok := operators.ToBinaryOp(c); ok {
 		return parseBinaryOperation(buf, op, val)
+	}
+	if c == kw_AS {
+		return parseTypeCast(buf, val)
 	}
 	if c == "?" {
 		// TODO: parse tern op
@@ -718,6 +727,15 @@ func parseSwitch(buf *Buffer) (execute.Expression, error) {
 		return nil, err
 	}
 	return &ast.SwitchNode{Value: expr, Cases: cases, DefaultCase: defaultCase}, nil
+}
+
+func parseTypeCast(buf *Buffer, left execute.Expression) (execute.Expression, error) {
+	tkn := buf.Pop()
+	dstType, ok := types.GetType(tkn)
+	if !ok {
+		return nil, errors.NewSyntaxError(buf, "no such type", tkn)
+	}
+	return &ast.CastNode{Expr: left, Type: dstType}, nil
 }
 
 func parseUnaryOperation(buf *Buffer, op *operators.UnaryOperator) (execute.Expression, error) {

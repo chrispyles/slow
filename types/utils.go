@@ -8,7 +8,7 @@ import (
 	"github.com/chrispyles/slow/execute"
 )
 
-var allTypes = []execute.Type{
+var AllTypes = []execute.Type{
 	BoolType,
 	BytesType,
 	FloatType,
@@ -22,6 +22,15 @@ var allTypes = []execute.Type{
 	NullType,
 	StrType,
 	UintType,
+}
+
+func GetType(typeName string) (execute.Type, bool) {
+	for _, t := range AllTypes {
+		if t.String() == typeName {
+			return t, true
+		}
+	}
+	return nil, false
 }
 
 var typeHierarchy = map[execute.Type]int{

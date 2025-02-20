@@ -98,6 +98,50 @@ Bytes are written as case-insensitive hexadecimal values prefixed with `0x` (for
 0xDEADBEEF
 ```
 
+#### Type Casting
+
+Values of one primitive type can be cast to another using the `as` keyword.
+
+```
+-> true as int
+1
+-> 1u as float
+1.0
+```
+
+The list of types that can be cast to is:
+
+- `bool`
+- `bytes`
+- `float`
+- `int`
+- `str`
+- `uint`
+
+While there are other types (`func`, `list`, `module`, etc.), these types do not support type casting.
+
+When numeric types are cast to `str`, the returned string contains the number printed in decimal format.
+
+```
+-> 1u as str
+"1"
+-> 1 as str
+"1"
+-> 1.0 as str
+"1.000000"
+```
+
+When a `str` is cast to a numeric type, Slow attempts to parse the string as a number of that type and fails if the string is not a valid decimal number. Note that even though `uint`s are represented with the `u` suffix in Slow, `"1u"` will error if you try to cast it to a `uint`.
+
+```
+-> "1" as uint
+1u
+-> "1" as int
+1
+-> "1" as float
+1.0
+```
+
 ### Statements
 
 Statements in Slow are delimited by newlines. Slow ignores indentation. Comments are preceded with the `#` character, after which everything on that line is ignored.
@@ -991,13 +1035,6 @@ try {
 } catch {
   handleError()
 }
-```
-
-### Type Casting
-
-```
--> int(true)
-1
 ```
 
 ### Variadic and Keyword Function Arguments

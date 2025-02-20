@@ -12,7 +12,7 @@ func newError(t, m string) *SlowError {
 	return &SlowError{t, m, nil}
 }
 
-func wrapError(t string, m string, err error) *SlowError {
+func wrapError(t string, m string, err error) error {
 	if err == nil {
 		return nil
 	}

@@ -75,6 +75,15 @@ func TestUnhashableTypeError(t *testing.T) {
 	}
 }
 
+func TestInvalidTypeCastTarget(t *testing.T) {
+	e := errors.InvalidTypeCastTarget(slowtesting.NewMockType())
+
+	got, want := e.Error(), "TypeError: type \"MockType\" does not support type casting"
+	if got != want {
+		t.Errorf("Error() returned incorrect value: got %q, want %q", got, want)
+	}
+}
+
 func TestTypeErrorFromMessage(t *testing.T) {
 	e := errors.TypeErrorFromMessage("foo")
 

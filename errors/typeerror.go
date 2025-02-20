@@ -30,6 +30,10 @@ func UnhashableTypeError(t Type) error {
 	return newError("TypeError", fmt.Sprintf("type %q is not hashable", t.String()))
 }
 
+func InvalidTypeCastTarget(dst Type) error {
+	return newError("TypeError", fmt.Sprintf("type %q does not support type casting", dst.String()))
+}
+
 func TypeErrorFromMessage(msg string) error {
 	return newError("TypeError", msg)
 }
