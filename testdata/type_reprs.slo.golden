@@ -1,0 +1,17 @@
+true
+false
+0xDEADBEEF
+1.0
+1.2
+-0.3
+<function foo>
+<generator>
+1
+-1
+[1, 2, 3]
+{1: 2}
+<module fs>
+null
+foo
+1u
+0u

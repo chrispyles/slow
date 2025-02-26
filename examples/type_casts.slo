@@ -1,0 +1,136 @@
+# bool -> bool
+print(true as bool)
+print(false as bool)
+
+# bool -> bytes
+print(true as bytes)
+print(false as bytes)
+
+# bool -> float
+print(true as float)
+print(false as float)
+
+# bool -> int
+print(true as int)
+print(false as int)
+
+# bool -> str
+print(true as str)
+print(false as str)
+
+# bool -> uint
+print(true as uint)
+print(false as float)
+
+
+# bytes -> bool
+print(0xdeadbeef as bool)
+print(0x00 as bool)
+
+# bytes -> bytes
+print(0xdeadbeef as bytes)
+
+# bytes -> float
+print(0xdeadbeef as float)
+
+# bytes -> int
+print(0xdeadbeef as int)
+
+# bytes -> str
+print(0x6667 as str)
+
+# bytes -> uint
+print(0xdeadbeef as uint)
+
+
+# float -> bool
+print(1. as bool)
+print(0. as bool)
+
+# float -> bytes
+print(1.2 as bytes)
+
+# float -> float
+print(1.2 as float)
+
+# float -> int
+print(1.2 as int)
+
+# float -> str
+print(1.2 as str)
+
+# float -> uint
+print(1.2 as uint)
+
+
+# int -> bool
+print(1 as bool)
+print(0 as bool)
+
+# int -> bytes
+print(3 as bytes)
+
+# int -> float
+print(3 as float)
+
+# int -> int
+print(3 as int)
+
+# int -> str
+print(3 as str)
+# print(-3 as str) # TODO: this errors but it should not
+
+# int -> uint
+print(3 as uint)
+
+
+# str -> bool
+print("foo" as bool)
+print("" as bool)
+
+# str -> bytes
+print("foo" as bytes)
+
+# str -> float
+print("3" as float)
+print("-3" as float)
+# print("3u" as float) # TODO: once try/catch is available, catch and print this error
+# print("foo" as float) # TODO: once try/catch is available, catch and print this error
+
+# str -> int
+print("3" as int)
+print("-3" as int)
+# print("3u" as int) # TODO: once try/catch is available, catch and print this error
+# print("foo" as int) # TODO: once try/catch is available, catch and print this error
+
+# str -> str
+print("foo" as str)
+print("" as str)
+
+# str -> uint
+print("3" as uint)
+# print("3u" as uint) # TODO: once try/catch is available, catch and print this error
+# print("-3" as uint) # TODO: once try/catch is available, catch and print this error
+
+
+# uint -> bool
+print(1u as bool)
+print(0u as bool)
+
+# uint -> bytes
+print(3u as bytes)
+
+# uint -> float
+print(3u as float)
+
+# uint -> uint
+print(3u as int)
+
+# uint -> str
+print(3u as str)
+
+# uint -> uint
+print(3u as uint)
+
+
+# TODO: once try/catch is available, check that casting to non-primitive types throws an error

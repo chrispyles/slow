@@ -1,0 +1,18 @@
+# list iterator
+var l = [1, 2, 3, 4]
+for i in l {
+  print(i)
+}
+
+# map iterator
+var m = {1: 2, "a": "b"}
+for k in m {
+  print(k)
+}
+
+# generator
+for i in range(5) {
+  print(i)
+}
+
+# TODO: test custom iterators

@@ -1,0 +1,32 @@
+print(true)
+print(false)
+
+print(0xdeadbeef)
+
+print(1.)
+print(1.2)
+print(-.3)
+
+func foo() {
+  return 1
+}
+print(foo)
+
+print(range(10))
+
+print(1)
+print(-1)
+
+print([1, 2, 3])
+
+print({1: 2})
+
+const fs = import("fs")
+print(fs)
+
+print(null)
+
+print("foo")
+
+print(1u)
+print(0u)
