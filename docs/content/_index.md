@@ -1,11 +1,13 @@
++++
+title = 'Home'
+type = 'docs'
++++
+
 # The Slow Programming Language
 
-[![Run tests](https://github.com/chrispyles/slow/actions/workflows/run-tests.yml/badge.svg)](https://github.com/chrispyles/slow/actions/workflows/run-tests.yml)
-[![Coverage Status](https://coveralls.io/repos/github/chrispyles/slow/badge.svg?branch=main)](https://coveralls.io/github/chrispyles/slow?branch=main)
-
-<p align="center">
-  <img src="logos/logo.png" width="256" alt="Slow logo">
-</p>
+<div style="display: flex; justify-content: center; margin: 2rem;">
+  {{< logo size="200" >}}
+</div>
 
 The Slow programming language is a dynamically-typed interpreted programming language implemented in Go.
 
@@ -32,7 +34,3 @@ To launch the Slow interpreter, run `slow -i`. Like the Python CLI, you can run 
 ```console
 $ slow -i main.slo
 ```
-
-## Reference
-
-A complete reference of the Slow programming language is available in the [documnetation](https://slowlange.dev).
