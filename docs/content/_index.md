@@ -23,13 +23,19 @@ This will add the `slow` binary to your Go `bin` directory, so make sure it is i
 
 ## Usage
 
-The `slow` interpreter has two modes: script execution and live interpretation. To run a Slow script (idiomatically a `.slo` file), pass the path to the file to the `slow` command:
+The `slow` interpreter has two modes: script execution and live interpretation. To launch the Slow interpreter, just run the `slow` command:
+
+```console
+$ slow
+```
+
+To run a Slow script (idiomatically a `.slo` file), pass the path to the file to the `slow` command:
 
 ```console
 $ slow main.slo
 ```
 
-To launch the Slow interpreter, run `slow -i`. Like the Python CLI, you can run a file and then start an interpreter with that file's environment using the `-i` flag with the script path:
+To launch the Slow interpreter after executing a script, use `slow -i`, like the Python CLI:
 
 ```console
 $ slow -i main.slo
