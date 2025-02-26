@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/chrispyles/slow/execute"
-	slowtesting "github.com/chrispyles/slow/testing"
+	slowcmpopts "github.com/chrispyles/slow/testing/cmpopts"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -25,13 +25,13 @@ func RunTestCase(t *testing.T, tc TestCase) {
 			wantEnv = tc.Env.Copy()
 		}
 		got, err := tc.Node.Execute(tc.Env)
-		if diff := cmp.Diff(tc.WantErr, err, slowtesting.AllowUnexported()); diff != "" {
+		if diff := cmp.Diff(tc.WantErr, err, slowcmpopts.AllowUnexported()); diff != "" {
 			t.Errorf("Execute() returned incorrect error (-want +got):\n%s", diff)
 		}
-		if diff := cmp.Diff(tc.Want, got, slowtesting.AllowUnexported()); diff != "" {
+		if diff := cmp.Diff(tc.Want, got, slowcmpopts.AllowUnexported()); diff != "" {
 			t.Errorf("Execute() returned unexpected diff (-want +got):\n%s", diff)
 		}
-		if diff := cmp.Diff(wantEnv, tc.Env, slowtesting.AllowUnexported(), slowtesting.EquateFuncs()); diff != "" {
+		if diff := cmp.Diff(wantEnv, tc.Env, slowcmpopts.AllowUnexported(), slowcmpopts.EquateFuncs()); diff != "" {
 			t.Errorf("env after Execute() has unexpected diff (-want +got):\n%s", diff)
 		}
 	})

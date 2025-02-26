@@ -7,17 +7,25 @@ import (
 
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
+	slowtesting "github.com/chrispyles/slow/testing"
 	testhelpers "github.com/chrispyles/slow/testing/helpers"
 	typestesting "github.com/chrispyles/slow/types/internal/testing"
 	"github.com/google/go-cmp/cmp"
 )
 
-var allowUnexported = cmp.AllowUnexported(errors.SlowError{})
-
 func TestBoolType(t *testing.T) {
-	// TODO: NewTestCases
 	tc := typestesting.TypeTestCase{
-		Type:          BoolType,
+		Type: BoolType,
+		NewTestCases: []typestesting.NewTestCase{
+			{
+				In:   &slowtesting.MockValue{ToBoolRet: true},
+				Want: NewBool(true),
+			},
+			{
+				In:   &slowtesting.MockValue{ToBoolRet: false},
+				Want: NewBool(false),
+			},
+		},
 		WantString:    "bool",
 		WantIsNumeric: true,
 	}

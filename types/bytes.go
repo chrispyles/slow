@@ -102,13 +102,7 @@ func (v *Bytes) SetIndex(execute.Value, execute.Value) error {
 }
 
 func (v *Bytes) String() string {
-	bs := v.value
-	var trunc string
-	if len(bs) > 64 {
-		bs = bs[:64]
-		trunc = "..."
-	}
-	return fmt.Sprintf("0x%X%s", bs, trunc)
+	return fmt.Sprintf("0x%X", v.value)
 }
 
 func (v *Bytes) ToBool() bool {

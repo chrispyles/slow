@@ -42,3 +42,4 @@ testcov:
 	@if [[ $$(uname -s) == "Darwin" ]]; then sed -i '' '$(IGNORECOVPATTERN)d' profile.cov; else sed -i '$(IGNORECOVPATTERN)d' profile.cov; fi
 	@echo "=== Generating coverage HTML report ==="
 	@go tool cover -html=profile.cov -o=coverage.html
+	@echo "=== Done ==="

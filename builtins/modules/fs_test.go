@@ -6,7 +6,7 @@ import (
 
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
-	slowtesting "github.com/chrispyles/slow/testing"
+	slowcmpopts "github.com/chrispyles/slow/testing/cmpopts"
 	"github.com/chrispyles/slow/types"
 	"github.com/google/go-cmp/cmp"
 )
@@ -34,10 +34,10 @@ func makeTestCallback(fn string, tc testCase) func(*testing.T) {
 			t.Fatalf("failed to convert Value to callable: %v", err)
 		}
 		got, err := fc.Call(env, tc.args...)
-		if diff := cmp.Diff(tc.wantErr, err, slowtesting.AllowUnexported()); diff != "" {
+		if diff := cmp.Diff(tc.wantErr, err, slowcmpopts.AllowUnexported()); diff != "" {
 			t.Errorf("function returned an unexpected error (-want +got):\n%s", diff)
 		}
-		if diff := cmp.Diff(tc.want, got, slowtesting.AllowUnexported()); diff != "" {
+		if diff := cmp.Diff(tc.want, got, slowcmpopts.AllowUnexported()); diff != "" {
 			t.Errorf("function returned an unexpected diff (-want +got):\n%s", diff)
 		}
 	}

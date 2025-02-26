@@ -7,10 +7,11 @@ import (
 	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/printer"
 	slowtesting "github.com/chrispyles/slow/testing"
+	slowcmpopts "github.com/chrispyles/slow/testing/cmpopts"
 	"github.com/google/go-cmp/cmp"
 )
 
-var allowUnexported = slowtesting.AllowUnexported(rangeGenerator{})
+var allowUnexported = slowcmpopts.AllowUnexported(rangeGenerator{})
 
 type builtinTest struct {
 	name         string
@@ -56,7 +57,7 @@ func doBuiltinTest(t *testing.T, tests []builtinTest) {
 			if diff := cmp.Diff(tc.wantErr, err, allowUnexported); diff != "" {
 				t.Errorf("c.Call() returned incorrect error (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want, got, allowUnexported, slowtesting.EquateFuncs()); diff != "" {
+			if diff := cmp.Diff(tc.want, got, allowUnexported, slowcmpopts.EquateFuncs()); diff != "" {
 				t.Errorf("c.Call() returned incorrect value (-want +got):\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.wantPrintlns, printed); diff != "" {

@@ -7,6 +7,7 @@ import (
 	"github.com/chrispyles/slow/errors"
 	"github.com/chrispyles/slow/execute"
 	slowtesting "github.com/chrispyles/slow/testing"
+	slowcmpopts "github.com/chrispyles/slow/testing/cmpopts"
 	"github.com/chrispyles/slow/types"
 	"github.com/google/go-cmp/cmp"
 )
@@ -109,7 +110,7 @@ func TestUnaryOperator_Value(t *testing.T) {
 					t.Errorf("Value() returned incorrect error (-want +got):\n%s", diff)
 				}
 			}
-			if diff := cmp.Diff(tc.want, got, slowtesting.AllowUnexported()); diff != "" {
+			if diff := cmp.Diff(tc.want, got, slowcmpopts.AllowUnexported()); diff != "" {
 				t.Errorf("Value() returned diff (-want +got):\n%s", diff)
 			}
 			// if wantC, ok := tc.want.(*slowtesting.MockValue); ok {

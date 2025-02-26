@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/chrispyles/slow/execute"
-	slowtesting "github.com/chrispyles/slow/testing"
+	slowcmpopts "github.com/chrispyles/slow/testing/cmpopts"
 	"github.com/chrispyles/slow/types"
 	"github.com/google/go-cmp/cmp"
 )
@@ -88,10 +88,10 @@ func TestTypeCaster(t *testing.T) {
 				return
 			}
 			gotL, gotR := caster.Cast(tc.left, tc.right)
-			if diff := cmp.Diff(tc.wantLeftCast, gotL, slowtesting.AllowUnexported()); diff != "" {
+			if diff := cmp.Diff(tc.wantLeftCast, gotL, slowcmpopts.AllowUnexported()); diff != "" {
 				t.Errorf("Cast() returned incorrect left value (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.wantRightCast, gotR, slowtesting.AllowUnexported()); diff != "" {
+			if diff := cmp.Diff(tc.wantRightCast, gotR, slowcmpopts.AllowUnexported()); diff != "" {
 				t.Errorf("Cast() returned incorrect right value (-want +got):\n%s", diff)
 			}
 		})

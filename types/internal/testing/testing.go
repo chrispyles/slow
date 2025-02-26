@@ -2,6 +2,7 @@ package testing
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/chrispyles/slow/execute"
@@ -39,7 +40,13 @@ func (tc *TypeTestCase) Run(t *testing.T) {
 				} else if got != nil || want != nil {
 					t.Errorf("New returned incorrect error: got %v, want %v", got, want)
 				}
-				if diff := cmp.Diff(ntc.Want, got, cmp.AllowUnexported(ntc.In, ntc.Want)); diff != "" {
+				var types []any
+				for _, v := range []execute.Value{ntc.In, ntc.Want, got} {
+					if rv := reflect.ValueOf(v); rv.IsValid() {
+						types = append(types, rv.Elem().Interface())
+					}
+				}
+				if diff := cmp.Diff(ntc.Want, got, cmp.AllowUnexported(types...)); diff != "" {
 					t.Errorf("New returned incorrect value (-want +got):\n%s", diff)
 				}
 			})
