@@ -40,6 +40,19 @@ l[:-1]
 l[-2:]
 ```
 
+## Enums
+
+<!-- TODO: something like Java enums? -->
+
+```
+enum Digit {
+  ONE,
+  TWO,
+  THREE,
+  FOUR,
+}
+```
+
 ## Comprehensions
 
 ```
