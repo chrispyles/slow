@@ -8,7 +8,7 @@ import (
 	testhelpers "github.com/chrispyles/slow/testing/helpers"
 )
 
-func TestRange_Construction(t *testing.T) {
+func TestRange(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       []execute.Value
@@ -60,7 +60,7 @@ func TestRange_Construction(t *testing.T) {
 		{
 			name:       "non_numeric_arg",
 			args:       []execute.Value{NewStr("10"), NewInt(20), NewInt(2)},
-			wantNewErr: errors.TypeErrorFromMessage("range cannot be called with non-numeric values: \"str\""),
+			wantNewErr: errors.TypeErrorFromMessage("ranges cannot be created with non-numeric values: \"str\""),
 		},
 		{
 			name: "0_to_5",

@@ -72,6 +72,49 @@ l[1] += 1
 4
 ```
 
+### List Slicing
+
+[Ranges]({{< relref "05-control-flow.md#ranges" >}}), or any [generator]({{< relref "05-control-flow.md#generators" >}}) that yields numeric values, can be used for slicing lists. The start, stop, and step values of a range are optional when slicing under certain circumstances, described by the rules below.
+
+- `step` is always optional and defaults to `1u`
+- `start` defaults to `0u` if `step` is non-negative or the list length if it is negative
+- `stop` defaults to the list length if `step` is non-negative or `0u` if it is negative
+
+Here are some example slices using ranges, with annotations indicating whether the ranges are valid in other contexts:
+
+{{< inputOutput >}}
+
+{{< codeWithCaption "`slicing.slo`" >}}
+var l = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+print(l[:])         # only valid for slicing
+print(l[2:4])
+print(l[4:2:-1])
+print(l[4:2])
+print(l[:5])
+print(l[5:])        # only valid for slicing
+print(l[::-1])      # only valid for slicing
+print(l[:5:-1])     # only valid for slicing
+print(l[0::2])      # only valid for slicing
+print(l[:8:2])
+print(l[range(3)])
+{{< /codeWithCaption >}}
+
+{{< codeWithCaption "`slicing.slo` output" >}}
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+[2, 3]
+[4, 3]
+[]
+[0, 1, 2, 3, 4]
+[5, 6, 7, 8, 9]
+[9, 8, 7, 6, 5, 4, 3, 2, 1]
+[9, 8, 7, 6]
+[0, 2, 4, 6, 8]
+[0, 2, 4, 6]
+[0, 1, 2]
+{{< /codeWithCaption >}}
+
+{{< /inputOutput >}}
+
 ## Map Indexing
 
 Map values can be retrieved or updated using indexing. To retrieve the element of a `map` key, use square brackets:

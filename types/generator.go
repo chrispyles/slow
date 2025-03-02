@@ -29,13 +29,18 @@ var GeneratorType = &generatorType{}
 // Type implementation
 // -------------------------------------------------------------------------------------------------
 
+type generatorImpl interface {
+	execute.Iterator
+	WithContainerLen(uint64) *Generator
+}
+
 // Generator is a type that wraps an execute.Iterator and satisfies both the execute.Iterator and
 // execute.Value interfaces.
 type Generator struct {
-	impl execute.Iterator
+	impl generatorImpl
 }
 
-func NewGenerator(gi execute.Iterator) *Generator {
+func NewGenerator(gi generatorImpl) *Generator {
 	return &Generator{gi}
 }
 
@@ -47,6 +52,10 @@ func (v *Generator) HasNext() bool {
 
 func (v *Generator) Next() (execute.Value, error) {
 	return v.impl.Next()
+}
+
+func (v *Generator) WithContainerLen(l uint64) *Generator {
+	return v.impl.WithContainerLen(l)
 }
 
 // execute.Value methods

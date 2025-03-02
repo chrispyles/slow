@@ -16,13 +16,9 @@ func rangeImpl(args ...execute.Value) (execute.Value, error) {
 	if len(args) > 1 {
 		lower = upper
 		upper = args[1]
-	} else {
-		lower = types.NewUint(0)
 	}
 	if len(args) > 2 {
 		step = args[2]
-	} else {
-		step = types.NewUint(1)
 	}
 	if len(args) > 3 {
 		return nil, errors.CallError("range", len(args), 3)

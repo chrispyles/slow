@@ -199,6 +199,8 @@ func parseExpression(buf *Buffer, contExpr execute.Expression, stopOnColon bool)
 				return nil, err
 			}
 			return contExpressionParsing(buf, &ast.MapNode{Values: values})
+		} else if tkn == ":" {
+			return parseRange(buf, val)
 		} else {
 			val, err = evaluateLiteralToken(tkn, buf)
 		}
@@ -664,12 +666,17 @@ func parseDefer(buf *Buffer) (execute.Expression, error) {
 }
 
 func parseRange(buf *Buffer, start execute.Expression) (execute.Expression, error) {
-	stop, err := parseExpression(buf, nil, true)
-	if err != nil {
-		return nil, err
+	var stop execute.Expression
+	if c := buf.Current(); c != ":" && c != "]" && c != ")" && c != "," {
+		var err error
+		stop, err = parseExpression(buf, nil, true)
+		if err != nil {
+			return nil, err
+		}
 	}
 	var step execute.Expression
 	if buf.Current() == ":" {
+		var err error
 		buf.Pop()
 		step, err = parseExpressionStart(buf)
 		if err != nil {

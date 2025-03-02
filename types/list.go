@@ -101,10 +101,38 @@ func (v *List) GetAttribute(a string) (execute.Value, error) {
 }
 
 func (v *List) GetIndex(i execute.Value) (execute.Value, error) {
+	if g, ok := i.(*Generator); ok {
+		var indices []int
+		g = g.WithContainerLen(uint64(len(v.values)))
+		for g.HasNext() {
+			iv, err := g.Next()
+			if err != nil {
+				return nil, err
+			}
+			i, err := numericIndex(iv, v.Type())
+			if err != nil {
+				return nil, err
+			}
+			indices = append(indices, i)
+		}
+		var sublist []execute.Value
+		for _, i := range indices {
+			v, err := v.getIndex(i)
+			if err != nil {
+				return nil, err
+			}
+			sublist = append(sublist, v)
+		}
+		return NewList(sublist), nil
+	}
 	idx, err := numericIndex(i, v.Type())
 	if err != nil {
 		return nil, err
 	}
+	return v.getIndex(idx)
+}
+
+func (v *List) getIndex(idx int) (execute.Value, error) {
 	idx, ok := normalizeIndex(idx, len(v.values))
 	if !ok {
 		return nil, errors.NewIndexError(fmt.Sprintf("%d", idx))

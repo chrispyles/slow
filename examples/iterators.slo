@@ -5,10 +5,11 @@ for i in l {
 }
 
 # map iterator
-var m = {1: 2, "a": "b"}
-for k in m {
-  print(k)
-}
+# TODO: need a stable way to iterate over maps
+# var m = {1: 2, "a": "b"}
+# for k in m {
+#  print(k)
+# }
 
 # generator
 for i in range(5) {

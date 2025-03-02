@@ -138,9 +138,13 @@ for e in [1, 2, 3] {
 
 ### Generators
 
-Custom generators are not yet implemented.
+Custom generators are not yet implemented. The proposed syntax is described [here]({{< relref "planned.md#generators" >}}).
 
-You can also declare a range generator using colon syntax: `<start>:<stop>`, or with a custom step value: `<start>:<stop>:<step>`. `a:b:c` is returns a generator equivalent to `range(a, b, c)`.
+#### Ranges
+
+You can also declare a range generator using colon syntax: `<start>:<stop>:<step>`. `a:b:c` is returns a generator equivalent to `range(a, b, c)`. When the step is positive, the start value is optional and defaults to `0u`; when it's negative, the stop value is optional and defaults to `0u`.
+
+Here are some examples of ranges:
 
 ```
 -> for i in 0:5 {
@@ -160,3 +164,5 @@ You can also declare a range generator using colon syntax: `<start>:<stop>`, or 
 2
 1
 ```
+
+Ranges can also be used to [slice lists]({{< relref "07-indexing.md#list-slicing" >}}). Note that the rules about range parameters being optional when slicing do not all apply when not using a range for slicing; this is because some of the rules require knowing the length of the container being sliced.

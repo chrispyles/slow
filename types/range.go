@@ -8,8 +8,9 @@ import (
 )
 
 type RangeIterator struct {
-	valueType execute.Type
-	incr      bool
+	valueType        execute.Type
+	incr             bool
+	truncToContainer bool
 
 	nextF  float64
 	startF float64
@@ -36,18 +37,42 @@ func NewRangeGenerator(start, stop, step execute.Value) (execute.Value, error) {
 }
 
 func makeRange(start, stop, step execute.Value) (*RangeIterator, error) {
-	for _, v := range []execute.Value{start, stop, step} {
-		if !v.Type().IsNumeric() {
-			return nil, errors.TypeErrorFromMessage(fmt.Sprintf("range cannot be called with non-numeric values: %q", v.Type()))
+	var startType, stopType, stepType execute.Type = UintType, UintType, UintType
+	if start != nil {
+		startType = start.Type()
+	}
+	if stop != nil {
+		stopType = stop.Type()
+	}
+	if step == nil {
+		step = NewUint(1)
+	}
+	stepType = step.Type()
+	for _, v := range []execute.Type{startType, stopType, stepType} {
+		if !v.IsNumeric() {
+			return nil, errors.TypeErrorFromMessage(fmt.Sprintf("ranges cannot be created with non-numeric values: %q", v))
 		}
 	}
-	commonType, ok := CommonNumericType(start.Type(), stop.Type())
+	commonType, ok := CommonNumericType(startType, stopType)
 	if !ok {
 		panic("CommonNumericType() returned no common type in newRangeGenerator()")
 	}
-	commonType, ok = CommonNumericType(commonType, step.Type())
+	commonType, ok = CommonNumericType(commonType, stepType)
 	if !ok {
 		panic("CommonNumericType() returned no common type in newRangeGenerator()")
+	}
+	incr := must(step.ToFloat()) > 0 // all numeric types convert to float w/o losing sign
+	var truncToContainer bool
+	if incr {
+		truncToContainer = stop == nil
+	} else {
+		truncToContainer = start == nil
+	}
+	if start == nil {
+		start = NewUint(0)
+	}
+	if stop == nil {
+		stop = NewUint(0)
 	}
 	switch commonType {
 	case FloatType:
@@ -64,12 +89,13 @@ func makeRange(start, stop, step execute.Value) (*RangeIterator, error) {
 			return nil, err
 		}
 		return &RangeIterator{
-			valueType: FloatType,
-			incr:      stepC >= 0,
-			nextF:     startC,
-			startF:    startC,
-			stopF:     stopC,
-			stepF:     stepC,
+			valueType:        FloatType,
+			incr:             incr,
+			truncToContainer: truncToContainer,
+			nextF:            startC,
+			startF:           startC,
+			stopF:            stopC,
+			stepF:            stepC,
 		}, nil
 	case IntType:
 		startC, err := start.ToInt()
@@ -85,12 +111,13 @@ func makeRange(start, stop, step execute.Value) (*RangeIterator, error) {
 			return nil, err
 		}
 		return &RangeIterator{
-			valueType: IntType,
-			incr:      stepC >= 0,
-			nextI:     startC,
-			startI:    startC,
-			stopI:     stopC,
-			stepI:     stepC,
+			valueType:        IntType,
+			incr:             incr,
+			truncToContainer: truncToContainer,
+			nextI:            startC,
+			startI:           startC,
+			stopI:            stopC,
+			stepI:            stepC,
 		}, nil
 	case BoolType:
 		fallthrough
@@ -108,18 +135,20 @@ func makeRange(start, stop, step execute.Value) (*RangeIterator, error) {
 			return nil, err
 		}
 		return &RangeIterator{
-			valueType: UintType,
-			incr:      stepC >= 0,
-			nextU:     startC,
-			startU:    startC,
-			stopU:     stopC,
-			stepU:     stepC,
+			valueType:        UintType,
+			incr:             incr,
+			truncToContainer: truncToContainer,
+			nextU:            startC,
+			startU:           startC,
+			stopU:            stopC,
+			stepU:            stepC,
 		}, nil
 	}
 	panic("unexpected commonType in newRangeGenerator()")
 }
 
 func (g *RangeIterator) HasNext() bool {
+	// TODO: panic if truncToContainer is true????
 	switch g.valueType {
 	case FloatType:
 		if g.incr {
@@ -144,6 +173,9 @@ func (g *RangeIterator) HasNext() bool {
 }
 
 func (g *RangeIterator) Next() (execute.Value, error) {
+	if g.truncToContainer {
+		return nil, errors.NewValueError("a range without endpoints may only be used for indexing")
+	}
 	switch g.valueType {
 	case FloatType:
 		var curr float64
@@ -159,4 +191,48 @@ func (g *RangeIterator) Next() (execute.Value, error) {
 		return NewUint(curr), nil
 	}
 	panic("unexpected type in rangeGenerator.Next()")
+}
+
+func (g *RangeIterator) WithContainerLen(l uint64) *Generator {
+	copy := *g
+	if !copy.incr && l > 0 {
+		// If decrementing, set the starting index to len - 1 so we don't start w/ an out-of-bounds index.
+		l -= 1
+	}
+	if copy.truncToContainer {
+		switch copy.valueType {
+		case FloatType:
+			if copy.startF != copy.nextF {
+				panic("WithContainerLen called after iteration started")
+			}
+			if copy.incr {
+				copy.stopF = float64(l)
+			} else {
+				copy.startF = float64(l)
+				copy.nextF = float64(l)
+			}
+		case IntType:
+			if copy.startI != copy.nextI {
+				panic("WithContainerLen called after iteration started")
+			}
+			if copy.incr {
+				copy.stopI = int64(l)
+			} else {
+				copy.startI = int64(l)
+				copy.nextI = int64(l)
+			}
+		case UintType:
+			if copy.startU != copy.nextU {
+				panic("WithContainerLen called after iteration started")
+			}
+			if copy.incr {
+				copy.stopU = l
+			} else {
+				copy.startU = l
+				copy.nextU = l
+			}
+		}
+		copy.truncToContainer = false
+	}
+	return NewGenerator(&copy)
 }

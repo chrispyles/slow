@@ -19,20 +19,18 @@ func (n *RangeNode) Execute(e *execute.Environment) (execute.Value, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		start = types.NewUint(0)
 	}
-	stop, err = n.Stop.Execute(e)
-	if err != nil {
-		return nil, err
+	if n.Stop != nil {
+		stop, err = n.Stop.Execute(e)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if n.Step != nil {
 		step, err = n.Step.Execute(e)
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		step = types.NewUint(1)
 	}
 	return types.NewRangeGenerator(start, stop, step)
 }
