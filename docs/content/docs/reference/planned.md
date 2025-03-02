@@ -128,6 +128,18 @@ var {d, e, f} = {"d": 4, "e": 5, "f": 6}
 
 Both mutable and immutable variants.
 
+## Underscore Assignment
+
+Values that should be ignored in an assignment statement or function definition can be named with the `_` character. `_` is not a variable but syntactic sugar to tell the interpreter to ignore the value.
+
+```
+var [a, _, _, d] = [1, 2, 3, 4]
+
+func foo(a, _, b, _) {
+  # ...
+}
+```
+
 ## Planned APIs
 
 ### `fs` Module

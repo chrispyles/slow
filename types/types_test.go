@@ -16,6 +16,7 @@ var allowUnexported = cmp.AllowUnexported(
 	Iterator{},
 	List{},
 	Module{},
+	RangeIterator{},
 	Str{},
 	Uint{},
 )

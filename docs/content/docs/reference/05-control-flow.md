@@ -135,3 +135,28 @@ for e in [1, 2, 3] {
   print(e)
 }
 ```
+
+### Generators
+
+Custom generators are not yet implemented.
+
+You can also declare a range generator using colon syntax: `<start>:<stop>`, or with a custom step value: `<start>:<stop>:<step>`. `a:b:c` is returns a generator equivalent to `range(a, b, c)`.
+
+```
+-> for i in 0:5 {
+..   print(i)
+.. }
+0
+1
+2
+3
+4
+-> for i in 5:0:-1 {
+..   print(i)
+.. }
+5
+4
+3
+2
+1
+```

@@ -167,10 +167,10 @@ func readBuffer(buf *Buffer) (execute.Expression, error) {
 }
 
 func parseExpressionStart(buf *Buffer) (execute.Expression, error) {
-	return parseExpression(buf, nil)
+	return parseExpression(buf, nil, false)
 }
 
-func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expression, error) {
+func parseExpression(buf *Buffer, contExpr execute.Expression, stopOnColon bool) (execute.Expression, error) {
 	var val execute.Expression
 	var err error
 	if contExpr == nil {
@@ -209,7 +209,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		return nil, err
 	}
 	c := buf.Pop()
-	if c == "," || c == ":" || c == ")" || c == "]" || c == "}" {
+	if c == "," || (c == ":" && stopOnColon) || c == ")" || c == "]" || c == "}" {
 		// we are inside a function call, list literal, map literal, or block, so put move the token
 		// back one so that the calling frame can consume it
 		buf.MoveBack()
@@ -233,20 +233,23 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		// TODO: parse tern op
 		return nil, nil
 	}
+	if c == ":" {
+		return parseRange(buf, val)
+	}
 	if c == "." {
 		// This is a dot access
 		sym := buf.Pop()
 		if err := validateSymbol(buf, sym); err != nil {
 			return nil, err
 		}
-		expr, err := parseExpression(buf, &ast.AttributeNode{Left: val, Right: sym})
+		expr, err := parseExpression(buf, &ast.AttributeNode{Left: val, Right: sym}, false)
 		if err != nil {
 			return nil, err
 		}
 		if buf.Current() == "\n" {
 			return expr, nil
 		}
-		return parseExpression(buf, expr)
+		return parseExpression(buf, expr, false)
 	}
 	if c == "=" {
 		// This is a variable assignment
@@ -290,7 +293,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 		if buf.Current() == "\n" {
 			return expr, nil
 		}
-		return parseExpression(buf, expr)
+		return parseExpression(buf, expr, false)
 	}
 	return nil, errors.UnexpectedSymbolError(buf, c, "")
 }
@@ -298,7 +301,7 @@ func parseExpression(buf *Buffer, contExpr execute.Expression) (execute.Expressi
 func contExpressionParsing(buf *Buffer, expr execute.Expression) (execute.Expression, error) {
 	if buf.Current() != "\n" {
 		// There is more to this expression.
-		return parseExpression(buf, expr)
+		return parseExpression(buf, expr, false)
 	}
 	return expr, nil
 }
@@ -616,7 +619,7 @@ func parseMap(buf *Buffer) ([][]execute.Expression, error) {
 	var kvs [][]execute.Expression
 	for next != "}" {
 		buf.ConsumeNewlines()
-		keyExpr, err := parseExpressionStart(buf)
+		keyExpr, err := parseExpression(buf, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -658,6 +661,22 @@ func parseDefer(buf *Buffer) (execute.Expression, error) {
 		return nil, errors.NewSyntaxError(buf, "only function calls may be deferred", "")
 	}
 	return &ast.DeferNode{Expr: expr}, nil
+}
+
+func parseRange(buf *Buffer, start execute.Expression) (execute.Expression, error) {
+	stop, err := parseExpression(buf, nil, true)
+	if err != nil {
+		return nil, err
+	}
+	var step execute.Expression
+	if buf.Current() == ":" {
+		buf.Pop()
+		step, err = parseExpressionStart(buf)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &ast.RangeNode{Start: start, Stop: stop, Step: step}, nil
 }
 
 func parseString(buf *Buffer, tkn string) (execute.Expression, error) {

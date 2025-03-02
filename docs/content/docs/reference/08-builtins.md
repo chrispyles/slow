@@ -78,6 +78,8 @@ range(2, 10)     # yields 2, 3, 4, 5, 6, 7, 8, 9
 range(2, 10, 3)  # yields 2, 5, 8
 ```
 
+You can also create ranges with some syntactic sugar descibed [here]({{< relref "05-control-flow.md#generators" >}}).
+
 ## `type`
 
 The `type` function takes a single argument and returns a string representing the type of its argument.

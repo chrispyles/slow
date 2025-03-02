@@ -11,8 +11,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-var allowUnexported = slowcmpopts.AllowUnexported(rangeGenerator{})
-
 type builtinTest struct {
 	name         string
 	fn           string
@@ -54,16 +52,16 @@ func doBuiltinTest(t *testing.T, tests []builtinTest) {
 				t.Fatalf("fn.ToCallable() returned unexpected error: %v", err)
 			}
 			got, err := c.Call(env, tc.args...)
-			if diff := cmp.Diff(tc.wantErr, err, allowUnexported); diff != "" {
+			if diff := cmp.Diff(tc.wantErr, err, slowcmpopts.AllowUnexported()); diff != "" {
 				t.Errorf("c.Call() returned incorrect error (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want, got, allowUnexported, slowcmpopts.EquateFuncs()); diff != "" {
+			if diff := cmp.Diff(tc.want, got, slowcmpopts.AllowUnexported(), slowcmpopts.EquateFuncs()); diff != "" {
 				t.Errorf("c.Call() returned incorrect value (-want +got):\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.wantPrintlns, printed); diff != "" {
 				t.Errorf("println called incorrectly (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.wantCalls, gotCalls); diff != "" {
+			if diff := cmp.Diff(tc.wantCalls, gotCalls, slowcmpopts.AllowUnexported()); diff != "" {
 				t.Errorf("mocked function called incorrectly (-want +got):\n%s", diff)
 			}
 		})

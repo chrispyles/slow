@@ -26,6 +26,7 @@ func AllowUnexported(addl ...interface{}) cmp.Option {
 				types.Iterator{},
 				types.List{},
 				types.Module{},
+				types.RangeIterator{},
 				types.Str{},
 				types.Uint{},
 			},
