@@ -35,7 +35,7 @@ Inside a function, a function call can be deferred so that it runs just before t
 ..   # without the deferral, this statement would error because the variable does not yet exist
 ..   defer print(i)
 ..   var i = 0
-..   for _ in range(20) {
+..   for _ in :20 {
 ..     ++i
 ..   }
 .. }

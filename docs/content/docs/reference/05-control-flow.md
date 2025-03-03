@@ -147,7 +147,7 @@ You can also declare a range generator using colon syntax: `<start>:<stop>:<step
 Here are some examples of ranges:
 
 ```
--> for i in 0:5 {
+-> for i in :5 {
 ..   print(i)
 .. }
 0
@@ -155,7 +155,7 @@ Here are some examples of ranges:
 2
 3
 4
--> for i in 5:0:-1 {
+-> for i in 5::-1 {
 ..   print(i)
 .. }
 5

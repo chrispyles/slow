@@ -27,7 +27,7 @@ Every statement in Slow evaluates to a value. For bocks, this is the return valu
 .. }
 ..
 0
--> for x in range(10) {
+-> for x in :10 {
 ..   x
 .. }
 ..
