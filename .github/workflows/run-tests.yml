@@ -32,7 +32,7 @@ jobs:
 
       - name: Build
         run: |
-          make test
+          go build -v $(go list ./... | grep -v github.com/chrispyles/slow/wasm)
 
       - name: Run tests
         run: |
