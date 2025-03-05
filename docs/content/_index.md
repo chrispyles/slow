@@ -40,3 +40,7 @@ To launch the Slow interpreter after executing a script, use `slow -i`, like the
 ```console
 $ slow -i main.slo
 ```
+
+## Playground
+
+You can test out Slow using the online [playground](/playground.html), which runs the Slow interpreter entirely in your browser with WASM.

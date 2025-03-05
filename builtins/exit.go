@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/printer"
 	"github.com/chrispyles/slow/types"
 )
 
@@ -20,7 +21,7 @@ func exitImpl(args ...execute.Value) (execute.Value, error) {
 			code, _ = types.NewBool(args[0].ToBool()).ToInt()
 		}
 	}
-	printlnf("Exiting with code %d", code)
+	printer.Printlnf("Exiting with code %d", code)
 	osExit(int(code))
 	return types.Null, nil
 }

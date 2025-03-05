@@ -35,7 +35,7 @@ func Read(rdr *bufio.Reader) (string, error) {
 			complete = false
 		}
 		s += line
-		complete, err = isCompleteStatement(s)
+		complete, err = IsCompleteStatement(s)
 		if err != nil {
 			return "", err
 		}
@@ -49,7 +49,7 @@ func Read(rdr *bufio.Reader) (string, error) {
 	}
 }
 
-func isCompleteStatement(s string) (bool, error) {
+func IsCompleteStatement(s string) (bool, error) {
 	var opens []rune
 	for _, c := range s {
 		if c == '(' || c == '[' || c == '{' {

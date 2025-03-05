@@ -16,7 +16,7 @@ var (
 	println = printer.Println
 )
 
-func Eval(s string, env *execute.Environment, printExprValue bool) {
+func Eval(s string, env *execute.Environment, printExpr bool) {
 	ast, err := makeAST(s)
 	if err != nil {
 		printError(err)
@@ -39,7 +39,7 @@ func Eval(s string, env *execute.Environment, printExprValue bool) {
 		panic("ast.Execute returned nil")
 	}
 
-	if printExprValue && val != types.Null {
+	if printExpr && val != types.Null {
 		println(val.String())
 	}
 

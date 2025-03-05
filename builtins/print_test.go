@@ -16,8 +16,8 @@ func TestBuiltins_print(t *testing.T) {
 			args: []execute.Value{
 				types.NewStr("foo"),
 			},
-			want:         types.Null,
-			wantPrintlns: []string{"foo"},
+			want:       types.Null,
+			wantPrints: []string{"foo\n"},
 		},
 		{
 			name: "value",
@@ -25,8 +25,8 @@ func TestBuiltins_print(t *testing.T) {
 			args: []execute.Value{
 				&slowtesting.MockValue{StringRet: "MOCK_VALUE"},
 			},
-			want:         types.Null,
-			wantPrintlns: []string{"MOCK_VALUE"},
+			want:       types.Null,
+			wantPrints: []string{"MOCK_VALUE\n"},
 		},
 		{
 			name: "many",
@@ -36,8 +36,8 @@ func TestBuiltins_print(t *testing.T) {
 				&slowtesting.MockValue{StringRet: "MV2"},
 				&slowtesting.MockValue{StringRet: "MV3"},
 			},
-			want:         types.Null,
-			wantPrintlns: []string{"MV1MV2MV3"},
+			want:       types.Null,
+			wantPrints: []string{"MV1MV2MV3\n"},
 		},
 	})
 }

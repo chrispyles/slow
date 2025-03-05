@@ -11,11 +11,14 @@ build:
 run: build
 	build/slow
 
+.PHONY: wasm
+wasm:
+	@GOOS=js GOARCH=wasm go build -o docs/static/js/main.wasm ./wasm
 
 test:
 	@rm -rf $(COVERDIR)
 	@mkdir $(COVERDIR)
-	@go test -shuffle=off -v ./...
+	@go test -shuffle=off $$(go list ./... | grep -v github.com/chrispyles/slow/wasm)
 	@rm -r $(COVERDIR)
 
 # The build_integration_test and buildcov rules require the user to set BUILDCOVOUT to the path that

@@ -10,6 +10,11 @@ unsafe = true
 startLevel = 1
 
 [[menu.after]]
+  name = "Playground"
+  url = "/playground.html"
+  weight = 5
+
+[[menu.after]]
   name = "GitHub"
   url = "https://github.com/chrispyles/slow"
   weight = 10

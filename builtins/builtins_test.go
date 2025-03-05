@@ -1,7 +1,6 @@
 package builtins
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/chrispyles/slow/execute"
@@ -12,30 +11,23 @@ import (
 )
 
 type builtinTest struct {
-	name         string
-	fn           string
-	args         []execute.Value
-	makeMock     func() []any
-	cleanupMock  func()
-	want         execute.Value
-	wantPrintlns []string
-	wantCalls    []any
-	wantErr      error
+	name        string
+	fn          string
+	args        []execute.Value
+	makeMock    func() []any
+	cleanupMock func()
+	want        execute.Value
+	wantPrints  []string
+	wantCalls   []any
+	wantErr     error
 }
 
 func doBuiltinTest(t *testing.T, tests []builtinTest) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var printed []string
-			println = func(s string) {
+			printer.Set(func(s string) {
 				printed = append(printed, s)
-			}
-			printlnf = func(s string, a ...any) {
-				printed = append(printed, fmt.Sprintf(s, a...))
-			}
-			t.Cleanup(func() {
-				println = printer.Println
-				printlnf = printer.Printlnf
 			})
 			var gotCalls []any
 			if tc.makeMock != nil {
@@ -58,7 +50,7 @@ func doBuiltinTest(t *testing.T, tests []builtinTest) {
 			if diff := cmp.Diff(tc.want, got, slowcmpopts.AllowUnexported(), slowcmpopts.EquateFuncs()); diff != "" {
 				t.Errorf("c.Call() returned incorrect value (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.wantPrintlns, printed); diff != "" {
+			if diff := cmp.Diff(tc.wantPrints, printed); diff != "" {
 				t.Errorf("println called incorrectly (-want +got):\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.wantCalls, gotCalls, slowcmpopts.AllowUnexported()); diff != "" {

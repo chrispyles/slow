@@ -2,6 +2,7 @@ package builtins
 
 import (
 	"github.com/chrispyles/slow/execute"
+	"github.com/chrispyles/slow/printer"
 	"github.com/chrispyles/slow/types"
 )
 
@@ -18,6 +19,6 @@ func printImpl(args ...execute.Value) (execute.Value, error) {
 		}
 		fullout += out
 	}
-	println(fullout)
+	printer.Println(fullout)
 	return types.Null, nil
 }

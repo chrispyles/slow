@@ -14,3 +14,5 @@ node_modules
 .vscode
 /docs/public
 /docs/resources
+/docs/static/js/main.wasm
+/docs/static/js/wasm_exec.js

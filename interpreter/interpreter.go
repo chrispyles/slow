@@ -6,6 +6,7 @@ import (
 
 	"github.com/chrispyles/slow/builtins"
 	evallib "github.com/chrispyles/slow/eval"
+	"github.com/chrispyles/slow/execute"
 	"github.com/chrispyles/slow/printer"
 	"github.com/chrispyles/slow/reader"
 )
@@ -15,14 +16,14 @@ var (
 	eval = evallib.Eval
 )
 
-func Run(code string, interactiveReader io.Reader) {
+func Run(code string, interactiveReader io.Reader) *execute.Environment {
 	env := builtins.RootEnvironment.NewFrame()
 	if code != "" {
 		eval(code, env, false)
 	}
 
 	if interactiveReader == nil {
-		return
+		return env
 	}
 
 	rdr := bufio.NewReader(interactiveReader)

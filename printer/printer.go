@@ -2,12 +2,21 @@ package printer
 
 import "fmt"
 
-const (
-	prefix = ""
-)
+var doPrint func(s string) = defaultPrint
+
+func defaultPrint(s string) {
+	fmt.Print(s)
+}
+
+func Set(dst func(s string)) {
+	if dst == nil {
+		dst = defaultPrint
+	}
+	doPrint = dst
+}
 
 func Print(s string) {
-	fmt.Print(prefix + s)
+	doPrint(s)
 }
 
 func Println(s string) {
@@ -15,7 +24,7 @@ func Println(s string) {
 }
 
 func Printf(s string, args ...any) {
-	fmt.Printf(prefix+s, args...)
+	doPrint(fmt.Sprintf(s, args...))
 }
 
 func Printlnf(s string, args ...any) {
