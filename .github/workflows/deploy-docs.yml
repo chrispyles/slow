@@ -60,7 +60,7 @@ jobs:
       - name: Build WASM
         run: |
           make wasm
-          cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" docs/static/js
+          find "$(go env GOROOT)" -name wasm/wasm_exec.js -print -exec cp {} docs/static/js \;
 
       - name: Install Node.js dependencies
         working-directory: ./docs
