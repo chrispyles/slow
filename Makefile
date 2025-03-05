@@ -5,6 +5,8 @@ BUILDCOVOUT      =
 COVERDIR         := $(shell pwd)/.coverdata
 IGNORECOVPATTERN = /\/testing\//
 
+_EXCLUDE_WASM_LIST = $$(go list ./... | grep -v github.com/chrispyles/slow/wasm)
+
 build:
 	go build -o build/slow
 
@@ -18,7 +20,7 @@ wasm:
 test:
 	@rm -rf $(COVERDIR)
 	@mkdir $(COVERDIR)
-	@go test -shuffle=off $$(go list ./... | grep -v github.com/chrispyles/slow/wasm)
+	@go test -shuffle=off $(_EXCLUDE_WASM_LIST)
 	@rm -r $(COVERDIR)
 
 # The build_integration_test and buildcov rules require the user to set BUILDCOVOUT to the path that
@@ -35,7 +37,7 @@ testcov: export SLOW_TESTING_GOCOVERDIR := $(COVERDIR)
 testcov:
 	@rm -rf $(COVERDIR) profile.cov coverage.html
 	@mkdir $(COVERDIR)
-	@go test -shuffle=on $(COVERAGEARGS) ./... -args -test.gocoverdir="$(COVERDIR)"
+	@go test -shuffle=on $(COVERAGEARGS) $(_EXCLUDE_WASM_LIST) -args -test.gocoverdir="$(COVERDIR)"
 	@echo "=== Coverage Summary ==="
 	@go tool covdata percent -i $(COVERDIR)
 	@echo "=== Combining coverage data and saving to profile.cov ==="
