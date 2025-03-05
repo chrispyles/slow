@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Slow Online Interpreter</title>
   <meta name="title" content="Slow Online Interpreter" />
   <meta name="description" content="A browser-based interpreter for the Slow programming language." />
@@ -83,6 +84,27 @@
       padding: 2px;
       margin: 2px;
       border: 1px solid black;
+    }
+
+    @media (max-width: 750px) {
+      body {
+        --header-height: 150px;
+
+        width: 100%;
+        padding: 0;
+      }
+
+      header {
+        padding-inline: .5rem;
+
+        a {
+          height: fit-content;
+        }
+      }
+
+      main {
+        border-inline: none;
+      }
     }
   </style>
 </head>
