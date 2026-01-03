@@ -175,7 +175,7 @@
     function isCompleteStatement(s) {
       const opens = [];
       for (let c of s) {
-        if (c == '(' || c == '[' || c == '{') {
+        if (c === '(' || c === '[' || c === '{') {
           opens.push(c);
           continue;
         }
@@ -195,7 +195,7 @@
         }
         // If the statement is not valid syntax, return true to let the interpreter produce a syntax
         // error.
-        if (opens.length == 0 || opens.at(-1) != close) {
+        if (opens.length === 0 || opens.at(-1) !== close) {
           return true;
         }
         opens.pop();

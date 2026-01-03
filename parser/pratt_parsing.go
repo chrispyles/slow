@@ -69,6 +69,7 @@ func init() {
 	// current token in the buffer is the keyword -- e.g. parseFunc should be
 	// called with buf.Current == "func"
 
+	// TODO: reassignment operators should probably not be BinOp nodes in the AST.
 	makeLEDHandler(lexer.Assignment, bp_Assignment, parseAssignment)
 	makeLEDHandler(lexer.PlusEqual, bp_Assignment, parseBinaryOperation)
 	makeLEDHandler(lexer.MinusEqual, bp_Assignment, parseBinaryOperation)

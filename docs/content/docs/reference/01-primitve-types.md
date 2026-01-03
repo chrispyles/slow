@@ -17,7 +17,7 @@ Slow has the following primitive data types:
 
 All numeric data types (except `bool`) are 64 bits (backed by Go's 64-bit number types).
 
-When converting from `bytes` to `float`, `int`, or `uint`, the bytes are decoded using the big-endian binary format. For example, 0xBEEF is converted to a `uint` as `48879u`, not `61374u`.
+When converting from `bytes` to `float`, `int`, or `uint`, the bytes are decoded using the big-endian binary format. For example, `0xBEEF` is converted to a `uint` as `48879u`, not `61374u`.
 
 All values are truthy except `false`, `0` (in all numeric types), `""`, a `bytes` object with all null bytes (e.g. `0x00`), and `null`.
 
