@@ -32,7 +32,7 @@ jobs:
 
       - name: Build
         run: |
-          go build -v $(go list ./src/... | grep -v github.com/chrispyles/slow/src/wasm)
+          go build -v $(go list ./src/... | grep -v github.com/chrispyles/slow/cmd/wasm)
 
       - name: Run tests
         run: |
