@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 	"syscall/js"
@@ -10,10 +9,6 @@ import (
 	"github.com/chrispyles/slow/src/interpreter"
 	"github.com/chrispyles/slow/src/printer"
 	"github.com/chrispyles/slow/src/reader"
-)
-
-var (
-	interpreterFlag = flag.Bool("i", false, "start the interpreter after running the file")
 )
 
 func main() {
@@ -34,7 +29,7 @@ func main() {
 			return fmt.Sprintf("%+v", err)
 		}
 		eval.Eval(in, env, true)
-		// Reset out after it's value is retrieved.
+		// Reset out after its value is retrieved.
 		defer func() { out = "" }()
 		return out
 	}))
