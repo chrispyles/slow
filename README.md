@@ -14,7 +14,7 @@ The Slow programming language is a dynamically-typed interpreted programming lan
 Currently, the only way to run the Slow interpreter is to build it from source. This can be done using the `go` CLI:
 
 ```console
-$ go install github.com/chrispyles/slow@latest
+$ go install github.com/chrispyles/slow/cmd/slow@latest
 ```
 
 This will add the `slow` binary to your Go `bin` directory, so make sure it is in your `$PATH`. Slow requires Go 1.23 or later. 
