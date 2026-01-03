@@ -5,17 +5,16 @@ BUILDCOVOUT      =
 COVERDIR         := $(shell pwd)/.coverdata
 IGNORECOVPATTERN = /\/testing\//
 
-_EXCLUDE_WASM_LIST = $$(go list ./... | grep -v github.com/chrispyles/slow/wasm)
+_EXCLUDE_WASM_LIST = $$(go list ./... | grep -v github.com/chrispyles/slow/src/wasm)
 
 build:
-	go build -o build/slow
+	go build -o build/slow ./src
 
 run: build
 	build/slow
 
-.PHONY: wasm
 wasm:
-	@GOOS=js GOARCH=wasm go build -o docs/static/js/main.wasm ./wasm
+	@GOOS=js GOARCH=wasm go build -o docs/static/js/main.wasm ./src/wasm
 
 test:
 	@rm -rf $(COVERDIR)
@@ -28,10 +27,10 @@ test:
 # integration_test.go.
 
 build_integration_test:
-	@go build -o $(BUILDCOVOUT) .
+	@go build -o $(BUILDCOVOUT) ./src
 
 buildcov:
-	@go build $(COVERAGEARGS) -o $(BUILDCOVOUT) .
+	@go build $(COVERAGEARGS) -o $(BUILDCOVOUT) ./src
 
 testcov: export SLOW_TESTING_GOCOVERDIR := $(COVERDIR)
 testcov:
