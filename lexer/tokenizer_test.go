@@ -1,4 +1,4 @@
-package parser
+package lexer
 
 import (
 	"testing"
@@ -27,130 +27,130 @@ for x in range(1, 20) {
 var y = .5
 `
 
-	want := []string{
+	want := []Token{
 		// Line 1
-		"func",
-		"hailstone",
-		"(",
-		"x",
-		")",
-		"{",
-		"\n",
+		{Func, "func"},
+		{Symbol, "hailstone"},
+		{OpenParen, "("},
+		{Symbol, "x"},
+		{CloseParen, ")"},
+		{OpenCurlyBracket, "{"},
+		{EOL, "\n"},
 
 		// Line 2
-		"var",
-		"l",
-		"=",
-		"[",
-		"x",
-		"]",
-		"\n",
+		{Var, "var"},
+		{Symbol, "l"},
+		{Assignment, "="},
+		{OpenBracket, "["},
+		{Symbol, "x"},
+		{CloseBracket, "]"},
+		{EOL, "\n"},
 
 		// Line 3
-		"while",
-		"x",
-		"!=",
-		"1",
-		"{",
-		"\n",
+		{While, "while"},
+		{Symbol, "x"},
+		{NotEquals, "!="},
+		{Number, "1"},
+		{OpenCurlyBracket, "{"},
+		{EOL, "\n"},
 
 		// Line 4
-		"if",
-		"x",
-		"%",
-		"2",
-		"==",
-		"0",
-		"{",
-		"\n",
+		{If, "if"},
+		{Symbol, "x"},
+		{Mod, "%"},
+		{Number, "2"},
+		{Equals, "=="},
+		{Number, "0"},
+		{OpenCurlyBracket, "{"},
+		{EOL, "\n"},
 
 		// Line 5
-		"x",
-		"//=",
-		"2",
-		"\n",
+		{Symbol, "x"},
+		{FloorDivEqual, "//="},
+		{Number, "2"},
+		{EOL, "\n"},
 
 		// Line 6
-		"}",
-		"else",
-		"{",
-		"\n",
+		{CloseCurlyBracket, "}"},
+		{Else, "else"},
+		{OpenCurlyBracket, "{"},
+		{EOL, "\n"},
 
 		// Line 7
-		"x",
-		"=",
-		"3",
-		"*",
-		"x",
-		"+",
-		"1",
-		"\n",
+		{Symbol, "x"},
+		{Assignment, "="},
+		{Number, "3"},
+		{Times, "*"},
+		{Symbol, "x"},
+		{Plus, "+"},
+		{Number, "1"},
+		{EOL, "\n"},
 
 		// Line 8
-		"}",
-		"\n",
+		{CloseCurlyBracket, "}"},
+		{EOL, "\n"},
 
 		// Line 9
-		"l",
-		".",
-		"append",
-		"(",
-		"x",
-		")",
-		"\n",
+		{Symbol, "l"},
+		{Dot, "."},
+		{Symbol, "append"},
+		{OpenParen, "("},
+		{Symbol, "x"},
+		{CloseParen, ")"},
+		{EOL, "\n"},
 
 		// Line 10
-		"}",
-		"\n",
+		{CloseCurlyBracket, "}"},
+		{EOL, "\n"},
 
 		// Line 11
-		"return",
-		"l",
-		"\n",
+		{Return, "return"},
+		{Symbol, "l"},
+		{EOL, "\n"},
 
 		// Line 12
-		"}",
-		"\n",
+		{CloseCurlyBracket, "}"},
+		{EOL, "\n"},
 
 		// Line 13
-		"\n",
+		{EOL, "\n"},
 
 		// Line 14
-		"for",
-		"x",
-		"in",
-		"range",
-		"(",
-		"1",
-		",",
-		"20",
-		")",
-		"{",
-		"\n",
+		{For, "for"},
+		{Symbol, "x"},
+		{In, "in"},
+		{Symbol, "range"},
+		{OpenParen, "("},
+		{Number, "1"},
+		{Comma, ","},
+		{Number, "20"},
+		{CloseParen, ")"},
+		{OpenCurlyBracket, "{"},
+		{EOL, "\n"},
 
 		// Line 15
-		"print",
-		"(",
-		"hailstone",
-		"(",
-		"x",
-		")",
-		")",
-		"\n",
+		{Symbol, "print"},
+		{OpenParen, "("},
+		{Symbol, "hailstone"},
+		{OpenParen, "("},
+		{Symbol, "x"},
+		{CloseParen, ")"},
+		{CloseParen, ")"},
+		{EOL, "\n"},
 
 		// Line 16
-		"}",
-		"\n",
+		{CloseCurlyBracket, "}"},
+		{EOL, "\n"},
 
 		// Line 17
-		"\n",
+		{EOL, "\n"},
 
 		// Line 18
-		"var",
-		"y",
-		"=",
-		".5",
-		"\n",
+		{Var, "var"},
+		{Symbol, "y"},
+		{Assignment, "="},
+		{Number, ".5"},
+		{EOL, "\n"},
 	}
 
 	buf := NewBuffer(code)
@@ -178,7 +178,7 @@ var y = .5
 		}
 	}
 
-	if buf.Current() != "\n" {
+	if buf.Current().Type != EOL {
 		t.Fatal("buf not on end of line 1")
 	}
 
@@ -192,8 +192,8 @@ var y = .5
 		t.Errorf("Current() after second MoveBack() returned incorrect value: got %q, want %q", got, want)
 	}
 
-	var popped []string
-	for buf.Current() != "" {
+	var popped []Token
+	for buf.Current().Type != EOF {
 		popped = append(popped, buf.Pop())
 	}
 
@@ -205,17 +205,17 @@ var y = .5
 func TestNoTrailingNewlineHandling(t *testing.T) {
 	code := "var y = .5"
 
-	want := []string{
-		"var",
-		"y",
-		"=",
-		".5",
+	want := []Token{
+		{Var, "var"},
+		{Symbol, "y"},
+		{Assignment, "="},
+		{Number, ".5"},
 	}
 
 	buf := NewBuffer(code)
 
-	var popped []string
-	for buf.Current() != "" {
+	var popped []Token
+	for buf.Current().Type != EOF {
 		popped = append(popped, buf.Pop())
 	}
 

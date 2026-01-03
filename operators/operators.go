@@ -1,9 +1,22 @@
 package operators
 
+import (
+	"iter"
+	"maps"
+)
+
 var (
 	unaryOperators  = make(map[string]*UnaryOperator)
 	binaryOperators = make(map[string]*BinaryOperator)
 )
+
+func AllUnaryOperators() iter.Seq[*UnaryOperator] {
+	return maps.Values(unaryOperators)
+}
+
+func AllBinaryOperators() iter.Seq[*BinaryOperator] {
+	return maps.Values(binaryOperators)
+}
 
 type unaryOperatorType string
 type binaryOperatorType string

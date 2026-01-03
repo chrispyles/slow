@@ -22,7 +22,6 @@ func (a *AST) Execute(e *execute.Environment) (execute.Value, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		if *config.Debug {
 			print("<AST EXECUTE LITTER> ")
 			litter.Dump(val)
