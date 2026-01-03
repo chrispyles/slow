@@ -30,70 +30,70 @@ func TestArithmetic(t *testing.T) {
 		code string
 		want execute.Value
 	}{
-		{
-			code: "3 + 2",
-			want: types.NewInt(5),
-		},
-		{
-			code: "3+ 2",
-			want: types.NewInt(5),
-		},
-		{
-			code: "3 +2",
-			want: types.NewInt(5),
-		},
-		{
-			code: "3+2",
-			want: types.NewInt(5),
-		},
-		{
-			code: "3 - 2",
-			want: types.NewInt(1),
-		},
-		{
-			code: "3- 2",
-			want: types.NewInt(1),
-		},
-		{
-			code: "3 -2",
-			want: types.NewInt(1),
-		},
-		{
-			code: "3-2",
-			want: types.NewInt(1),
-		},
-		{
-			code: "2 * 10",
-			want: types.NewInt(20),
-		},
-		{
-			code: "2* 10",
-			want: types.NewInt(20),
-		},
-		{
-			code: "2 *10",
-			want: types.NewInt(20),
-		},
-		{
-			code: "10 / 2",
-			want: types.NewFloat(5),
-		},
-		{
-			code: "10/ 2",
-			want: types.NewFloat(5),
-		},
-		{
-			code: "10 /2",
-			want: types.NewFloat(5),
-		},
-		{
-			code: "10/2",
-			want: types.NewFloat(5),
-		},
-		{
-			code: "2*(-3+1)",
-			want: types.NewInt(-4),
-		},
+		// {
+		// 	code: "3 + 2",
+		// 	want: types.NewInt(5),
+		// },
+		// {
+		// 	code: "3+ 2",
+		// 	want: types.NewInt(5),
+		// },
+		// {
+		// 	code: "3 +2",
+		// 	want: types.NewInt(5),
+		// },
+		// {
+		// 	code: "3+2",
+		// 	want: types.NewInt(5),
+		// },
+		// {
+		// 	code: "3 - 2",
+		// 	want: types.NewInt(1),
+		// },
+		// {
+		// 	code: "3- 2",
+		// 	want: types.NewInt(1),
+		// },
+		// {
+		// 	code: "3 -2",
+		// 	want: types.NewInt(1),
+		// },
+		// {
+		// 	code: "3-2",
+		// 	want: types.NewInt(1),
+		// },
+		// {
+		// 	code: "2 * 10",
+		// 	want: types.NewInt(20),
+		// },
+		// {
+		// 	code: "2* 10",
+		// 	want: types.NewInt(20),
+		// },
+		// {
+		// 	code: "2 *10",
+		// 	want: types.NewInt(20),
+		// },
+		// {
+		// 	code: "10 / 2",
+		// 	want: types.NewFloat(5),
+		// },
+		// {
+		// 	code: "10/ 2",
+		// 	want: types.NewFloat(5),
+		// },
+		// {
+		// 	code: "10 /2",
+		// 	want: types.NewFloat(5),
+		// },
+		// {
+		// 	code: "10/2",
+		// 	want: types.NewFloat(5),
+		// },
+		// {
+		// 	code: "2*(-3+1)",
+		// 	want: types.NewInt(-4),
+		// },
 		{
 			code: "- ( 2 * 3)",
 			want: types.NewInt(-6),

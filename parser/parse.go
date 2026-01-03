@@ -557,33 +557,16 @@ func parseUnaryOperation(buf *lexer.Buffer) (execute.Expression, error) {
 	}
 	var expr execute.Expression
 	var err error
-	var wantClosingParen bool
-	if buf.Current().Type == lexer.OpenParen {
-		buf.Pop()
-		wantClosingParen = true
-	}
 	expr, err = parseExpr(buf, bp_Unary)
 	if err != nil {
 		return nil, err
-	}
-	var node execute.Expression
-	if binop, ok := expr.(*ast.BinaryOpNode); ok {
-		// Unary operators take precedence over binary operators, so push the unary operation down.
-		unop := &ast.UnaryOpNode{Op: op, Expr: binop.Left}
-		binop.Left = unop
-		node = binop
-	} else {
-		node = &ast.UnaryOpNode{Op: op, Expr: expr}
-	}
-	if wantClosingParen {
-		expectClose(buf, ")") // remove ")" from the buffer
 	}
 	if op.IsReassignmentOperator() {
 		if err := validateAssignable(buf, expr); err != nil {
 			return nil, err
 		}
 	}
-	return node, nil
+	return &ast.UnaryOpNode{Op: op, Expr: expr}, nil
 }
 
 func parseVar(buf *lexer.Buffer) (execute.Expression, error) {
